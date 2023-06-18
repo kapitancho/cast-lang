@@ -1,0 +1,13 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+toInt = ^String => Integer @ StringIsNoIntegerNumber :: #->asIntegerNumber;
+
+main = ^Array<String> => Any @ StringIsNoIntegerNumber :: {
+    (#) ?<: {
+        | Array<String, 5..5> : {#->map(toInt)}->min
+        | ~ : "Please provide exactly 5 arguments"
+    }
+};
+

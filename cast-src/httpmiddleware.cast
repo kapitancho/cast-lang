@@ -1,0 +1,64 @@
+-> HttpMiddleware;
+//
+
+HttpProtocolVersion = :[HTTP1, HTTP11, HTTP2, HTTP3];
+
+CompositeHandler <: [defaultHandler: HttpRequestHandler, middlewares: Array<HttpMiddleware>];
+
+CompositeHandler ==> HttpRequestHandler :: {
+    ^[request: HttpRequest] => HttpResponse @@ :: {
+        ($.middlewares) ?<: {
+            | Array<1..>: {
+                m = $.middlewares->withoutFirst;
+                m.element[#.request, {CompositeHandler[$.defaultHandler, m.array]}->as(HttpRequestHandler)]
+            }
+            | ~: $.defaultHandler[#.request]
+        }
+    }
+};
+
+NotFoundHandler <: [~ResponseFactory];
+NotFoundHandler ==> HttpRequestHandler :: {
+    ^[request: HttpRequest] => HttpResponse @@ :: {
+        $.responseFactory.createResponse(404)
+    }
+};
+
+UncaughtExceptionHandler <: [~ResponseFactory];
+UncaughtExceptionHandler ==> HttpMiddleware :: {
+    ^[request: HttpRequest, handler: HttpRequestHandler] => HttpResponse :: {
+        result = @@{#.handler[#.request]};
+        (result) ?<: {
+            | HttpResponse: result
+            | RuntimeError: $.responseFactory.createResponse(500)
+        }
+    }
+};
+
+LookupRouter <: [routerMapping: Map<Type>, ~Container];
+LookupRouter ==> HttpMiddleware :: {
+    run = ^[request: HttpRequest, ~Type] => HttpResponse @@ :: {
+        handler = $.container->instanceOf(#.type);
+        rh = handler->as(HttpRequestHandler);
+        rh[#.request]
+    };
+
+    ^[request: HttpRequest, handler: HttpRequestHandler] => HttpResponse @@ :: {
+        request = #.request;
+        withUpdatedRequestPath = ^[path: String] => HttpRequest :: {
+            {request->with[requestTarget:
+                request.requestTarget->substring[start: #.path->length, end: 9999]
+            ]}->as(HttpRequest)
+        };
+
+        kv = @{$.routerMapping->findFirstKeyValue(
+            ^[key: String, value: HttpRequestHandler] => Boolean :: {
+                request.requestTarget->startsWith(#.key)
+            }
+        )};
+        (kv) ?<: {
+            | [key: String, value: Type] : run[withUpdatedRequestPath[kv.key], kv.value]
+            | ~: #.handler[request]
+        }
+    }
+};

@@ -1,0 +1,78 @@
+-> Product;
+
+main = ^Array<String> => Any :: @@ {
+    r0 = 0;
+    r1 = 42;
+    r2 = -17.54;
+    r3 = 3.64;
+    [
+        real0: r0,
+        real1: r1,
+        real2: r2,
+        real3: r3,
+
+        binaryLessThan: {r1} < {r3},
+        binaryLessThanEqual: {r1} <= {r3},
+        binaryGreaterThan: {r1} > {r3},
+        binaryGreaterThanEquals: {r1} >= {r3},
+
+        unaryPlus: + {r1},
+        unaryMinus: - {r1},
+        binaryPlus: {r1} + {r3},
+        binaryMinus: {r1} - {r3},
+        binaryMultiplication: {r1} * {r3},
+        binaryModulo: {r1} % {r3},
+        binaryModuloDivisionByZero: @{{r1} % {r0}},
+        binaryDivision: {r1} / {r3},
+        binaryDivisionDivisionByZero: @{{r1} / {r0}},
+        binaryPowerIntegers: {r1} ** {r3},
+
+        asInteger: r3->asInteger,
+        roundAsInteger: r3->roundAsInteger,
+        roundAsDecimal: r3->roundAsDecimal(1),
+        floor: r3->floor,
+        ceil: r3->ceil,
+
+        types: typeDemo[r0, r1, r2, r3]
+    ]
+};
+
+typeDemo = ^[
+    r0: Real<-3..3>,
+    r1: Real<0..50>,
+    r2: Real,
+    r3: Real<0.9..5.6>
+] => Type @ (DivisionByZero) :: {
+    r0 = #.r0;
+    r1 = #.r1;
+    r2 = #.r2;
+    r3 = #.r3;
+    {[
+        real0: r0,
+        real1: r1,
+        real2: r2,
+        real3: r3,
+
+        binaryLessThan: {r1} < {r3},
+        binaryLessThanEqual: {r1} <= {r3},
+        binaryGreaterThan: {r1} > {r3},
+        binaryGreaterThanEquals: {r1} >= {r3},
+
+        unaryPlus: + {r1},
+        unaryMinus: - {r1},
+        binaryPlus: {r1} + {r3},
+        binaryMinus: {r1} - {r3},
+        binaryMultiplication: {r1} * {r3},
+        binaryModulo: {r1} % {r3},
+        binaryModuloDivisionByZero: @{{r1} % {r0}},
+        binaryDivision: {r1} / {r3},
+        binaryDivisionDivisionByZero: @{{r1} / {r0}},
+        binaryPower: {r1} ** {r3},
+
+        asInteger: r3->asInteger,
+        roundAsInteger: r3->roundAsInteger,
+        roundAsDecimal: r3->roundAsDecimal(1),
+        floor: r3->floor,
+        ceil: r3->ceil
+    ]}->compilationType
+};

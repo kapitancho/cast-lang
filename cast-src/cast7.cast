@@ -1,0 +1,29 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+petyaFn = ^String => String :: {
+    {#->length}->asText
+};
+
+myFuncI = ^[String, String] => Integer @ StringIsNoIntegerNumber :: {
+    x = #.0;
+    y = #.1;
+    {x->asIntegerNumber} * {y->asIntegerNumber}
+};
+
+myFunc = ^Array<String, 2..> => Real @ StringIsNoRealNumber :: {
+    x = #->item(0);
+    y = #->item(1);
+    {x->asRealNumber} + {y->asRealNumber}
+};
+
+main = ^Array<String> => Any @@ :: {
+    (#) ?<: {
+        | [String, String] : @{myFuncI(#)}
+        | Array<String, 2..> : @{myFunc(#)}
+        | Array<String, 1..1> : petyaFn(#->item(0))
+        | ~ : "Please provide two arguments"
+    }
+};
+

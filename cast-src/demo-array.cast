@@ -1,0 +1,143 @@
+-> Product;
+
+MyNumbers <: Array<Integer>;
+MyPoint <: [Real, Real];
+
+main = ^Array<String> => Any :: @@ {
+    a1 = [1, "hi", 3.14];
+    a2 = ["Hello", "my", "Friend"];
+    a3 = [1, 3, 5];
+    a4 = [1, 3.14, 5.29];
+    a5 = [3.14, 1, 5, 9.99, 5, 15.2, 1, 20];
+    a6 = ["Hello", "Hi", "What", "125", "50", "Hi", "125", "99", ""];
+    a7 = MyNumbers[50, -2, 4];
+    a8 = MyPoint[3.14, 42];
+    [
+        array1: a1,
+        array2: a2,
+        array3: a3,
+        array4: a4,
+        array5: a5,
+        array6: a6,
+        array7: a7,
+        array8: a8,
+
+        length: a1->length,
+        reverse: a1->reverse,
+        contains: a1->contains("hi"),
+        item: @{a1->item(1)},
+        itemNotFound: @{a1->item(3)},
+        indexOf: @{a1->indexOf("hi")},
+        indexOfNotFound: @{a1->indexOf("bye")},
+
+        insertFirst: a1->insertFirst(true),
+        insertLast: a1->insertLast(true),
+        appendWith: a1->appendWith(a2),
+        withoutByIndex: @{a1->withoutByIndex(2)},
+        withoutByIndexNotFound: @{a1->withoutByIndex(4)},
+        withoutFirst: a1->withoutFirst,
+        withoutLast: a1->withoutLast,
+        without: @{a1->without(3.14)},
+        withoutNotFound: @{a1->without(7.29)},
+
+        map: a2->map(^String => Integer :: #->length),
+        filter: a2->filter(^String => Boolean :: #->contains("e")),
+        findFirst: @{a2->findFirst(^String => Boolean :: #->contains("e"))},
+        findFirstNotFound: @{a2->findFirst(^String => Boolean :: #->contains("x"))},
+
+        flip: a2->flip,
+        sumIntegers: a3->sum,
+        sumReals: a4->sum,
+        minIntegers: a3->min,
+        minReals: a4->min,
+        maxIntegers: a3->max,
+        maxReals: a4->max,
+        uniqueNumbers: a5->unique,
+        uniqueStrings: a6->unique,
+        sortNumbers: a5->sort,
+        sortStrings: a6->sort,
+        countValues: a6->countValues,
+        combineAsText: a2->combineAsText("; "),
+        pad: a1->pad[length: 6, value: false],
+
+        asMap: {[["a", 1], ["b", "Hi!"]]}->asMap,
+
+        arraySubtypeReverse: a7->reverse,
+        tupleSubtypeReverse: a8->reverse,
+
+        types: typeDemo[a1, a2, a3, a4, a5, a6, a7, a8]
+    ]
+};
+
+typeDemo = ^[
+    a1: Array<(String|Real), 2..5>,
+    a2: Array<String<..10>, 2..5>,
+    a3: Array<Integer, 1..>,
+    a4: Array<Real, 1..>,
+    a5: Array<Real, 3..20>,
+    a6: Array<String, 3..20>,
+    a7: MyNumbers,
+    a8: MyPoint
+] => Type @ ArrayItemNotFound :: {
+    a1 = #.a1;
+    a2 = #.a2;
+    a3 = #.a3;
+    a4 = #.a4;
+    a5 = #.a5;
+    a6 = #.a6;
+    a7 = #.a7;
+    a8 = #.a8;
+    {[
+        array1: a1,
+        array2: a2,
+        array3: a3,
+        array4: a4,
+        array5: a5,
+        array6: a6,
+        array7: a7,
+        array8: a8,
+
+        length: a1->length,
+        reverse: a1->reverse,
+        contains: a1->contains("hi"),
+        item: @{a1->item(1)},
+        itemNotFound: @{a1->item(3)},
+        indexOf: @{a1->indexOf("hi")},
+        indexOfNotFound: @{a1->indexOf("bye")},
+
+        insertFirst: a1->insertFirst(true),
+        insertLast: a1->insertLast(true),
+        appendWith: a1->appendWith(a2),
+        withoutByIndex: @{a1->withoutByIndex(2)},
+        withoutByIndexNotFound: @{a1->withoutByIndex(4)},
+        withoutFirst: a1->withoutFirst,
+        withoutLast: a1->withoutLast,
+        without: @{a1->without(3.14)},
+        withoutNotFound: @{a1->without(7.29)},
+
+        map: a2->map(^String => Integer :: #->length),
+        filter: a2->filter(^String => Boolean :: #->contains("e")),
+        findFirst: @{a2->findFirst(^String => Boolean :: #->contains("e"))},
+        findFirstNotFound: @{a2->findFirst(^String => Boolean :: #->contains("x"))},
+
+        flip: a2->flip,
+        sumIntegers: a3->sum,
+        sumReals: a4->sum,
+        minIntegers: a3->min,
+        minReals: a4->min,
+        maxIntegers: a3->max,
+        maxReals: a4->max,
+        uniqueNumbers: a5->unique,
+        uniqueStrings: a6->unique,
+        sortNumbers: a5->sort,
+        sortStrings: a6->sort,
+        countValues: a6->countValues,
+        combineAsText: a2->combineAsText("; "),
+        pad: a1->pad[length: 6, value: false],
+
+        asMap: {[["a", 1], ["b", "Hi!"]]}->asMap,
+
+        arraySubtypeReverse: a7->reverse,
+        tupleSubtypeReverse: a8->reverse
+    ]}->compilationType
+};

@@ -1,0 +1,159 @@
+-> Http;
+//
+
+LibTest <: Boolean;
+
+HttpRequestHandlerX = ^[request: HttpRequest] => HttpResponse;
+HttpMiddlewareX = ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse;
+
+CompositeHandler <: [defaultHandler: HttpRequestHandlerX, middlewares: Array<HttpMiddlewareX>];
+
+CompositeHandler ==> HttpRequestHandlerX :: {
+    ^[request: HttpRequest] => HttpResponse :: {
+        ($.middlewares) ?<: {
+            | Array<1..>: {
+                m = $.middlewares->withoutFirst;
+                m.element[#.request, {CompositeHandler[$.defaultHandler, m.array]}->as(HttpRequestHandlerX)]
+            }
+            | ~: $.defaultHandler[#.request]
+        }
+    }
+};
+
+ResponseFactory = [
+    createResponse: ^HttpStatusCodeX => HttpResponse
+];
+
+NotFoundHandler <: [~ResponseFactory];
+NotFoundHandler ==> HttpRequestHandlerX :: {
+    ^[request: HttpRequest] => HttpResponse :: {
+        $.responseFactory.createResponse(404)
+    }
+};
+
+UncaughtExceptionHandler <: [~ResponseFactory];
+UncaughtExceptionHandler ==> HttpMiddlewareX :: {
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        result = @@{#.handler[#.request]};
+        (result) ?<: {
+            | HttpResponse: result
+            | RuntimeError: $.responseFactory.createResponse(500)
+        }
+    }
+};
+
+Logger = [
+    log: ^String => Null
+];
+RequestLogger <: [~Logger];
+RequestLogger ==> HttpMiddlewareX :: {
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        $.logger.log("Request=...");
+        result = #.handler[#.request];
+        $.logger.log("Response=...");
+        result
+    }
+};
+
+T = (Null|HttpRequestHandlerX);
+
+LookupRouter <: [routerMapping: Map<HttpRequestHandlerX>];
+LookupRouter ==> HttpMiddlewareX :: {
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        request = Mutable[HttpRequest, #.request];
+        result = Mutable[T, null];
+
+        setOk = ^[path: String, handler: HttpRequestHandlerX] => Any :: {
+            result->SET(#.handler);
+            newRequestTarget = {request->value}.requestTarget->substring[start: #.path->length, end: 9999];
+            request->SET({{request->value}->with[requestTarget: newRequestTarget]}->as(HttpRequest))
+        };
+
+        kv = @{$.routerMapping->findKeyValue(
+            ^[key: String, value: HttpRequestHandlerX] => Boolean :: {
+                {request->value}.requestTarget->startsWith(#.key)
+            }
+        )};
+        (kv) ?<: {
+            [key: String, value: HttpRequestHandlerX]: setOk[kv.key, kv.value]
+            ~: null
+        };
+
+        handler = result->value;
+        (handler) ?<: {
+            | HttpRequestHandlerX: handler[request->value]
+            | ~: #.handler[request->value]
+        }
+    }
+};
+
+
+
+TemplateHandler <: [~ResponseFactory];
+TemplateHandler ==> HttpRequestHandlerX :: {
+    connection = DatabaseConnection["sqlite:db.sqlite"];
+    repo = {DatabaseSurveyTemplateRepository[connection]}->as(SurveyTemplateRepository);
+    templateService = {TemplateServiceX[repo]}->as(TemplateService);
+
+    ^[request: HttpRequest] => HttpResponse :: {
+        templateId = {#.request.requestTarget->substring[start: 1, end: 9999]}->asIntegerNumber;
+        q = (#.request.method) ?= {
+            | HttpRequestMethod.PATCH: templateService.updateDetails[
+                surveyTemplateId: templateId->hydrateAs(SurveyTemplateId),
+                surveyDetails: {{#.request.body}->jsonStringToValue}->hydrateAs(SurveyDetails)
+            ]
+            | HttpRequestMethod.POST: templateService.createSurveyTemplate[
+                surveyTitle: {{{#.request.body}->jsonStringToValue}->hydrateAs([surveyTitle: SurveyTitle])}.surveyTitle
+            ]
+            | HttpRequestMethod.DELETE: templateService.deleteSurveyTemplate[
+                surveyTemplateId: templateId->hydrateAs(SurveyTemplateId)
+            ]
+            | ~: 2
+        };
+        o = (q) ?<: {
+            | TemplateAdded: [
+                statusCode: 201,
+                protocolVersion: #.request.protocolVersion,
+                headers: [Location: [{"templates/"}->concat({q.surveyTemplateId}->asText)]],
+                body: ""
+            ]
+            | TemplateUpdated: $.responseFactory.createResponse(204)
+            | TemplateRemoved: $.responseFactory.createResponse(204)
+            | RuntimeError: [
+                statusCode: 500,
+                protocolVersion: #.request.protocolVersion,
+                headers: [:],
+                body: {q.error->type}->asText
+            ]
+            | ~: $.responseFactory.createResponse(405)
+        }
+    }
+};
+
+
+templatePath = "/templates";
+
+handle = ^Map => (Any|HttpResponse) @@ :: {
+    rf = [
+        createResponse: ^HttpStatusCodeX => HttpResponse :: {
+            [
+                statusCode: #,
+                protocolVersion: HttpProtocolVersion.HTTP11,
+                headers: [:],
+                body: ""
+            ]
+        }
+    ];
+    th = {TemplateHandler[rf]}->as(HttpRequestHandlerX);
+    dh = {NotFoundHandler[rf]}->as(HttpRequestHandlerX);
+    r = {LookupRouter[
+        {[
+            ["/templates", th],
+            ["", dh]
+        ]}->asMap
+    ]}->as(HttpMiddlewareX);
+
+    request = {#->as(JsonValue)}->hydrateAs(HttpRequest);
+
+    => r[request, dh]
+};

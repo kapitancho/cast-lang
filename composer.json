@@ -1,0 +1,35 @@
+{
+    "name": "walnut/cast",
+    "autoload": {
+        "psr-4": {
+            "Cast\\Test\\": "tests",
+            "Cast\\": "src"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marian Kostadinov",
+            "email": "manchokapitancho@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+		"ext-pdo": "*",
+        "psr/http-message": "^1.0.1",
+        "psr/http-factory": "^1.0.2",
+        "psr/http-server-handler": ">=1.0.1",
+        "kapitancho/php-peg": "dev-master"
+    },
+    "require-dev": {
+        "vimeo/psalm": ">=5.11.0",
+        "phpstan/phpstan": ">=1.0",
+        "phpunit/phpunit": ">=9.5.10",
+        "infection/infection": "^0.26.9",
+        "phpmetrics/phpmetrics": "^2.8"
+    },
+    "config": {
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
+    }
+}

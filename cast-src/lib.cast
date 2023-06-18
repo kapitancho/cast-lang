@@ -1,0 +1,69 @@
+-> Lib;
+//
+
+LibTest <: Boolean;
+
+InvalidHttpProtocolVersion <: String;
+HttpProtocolVersion = :[HTTP1, HTTP11, HTTP2];
+HttpMessageBody = String;
+HttpStatusCode = Integer<100..599>;
+HttpHeaderName = String;
+HttpRequestTarget = String;
+HttpRequestMethod = :[POST, GET, HEAD, PUT, PATCH, DELETE, OPTIONS];
+
+HttpStatusCodeX = (Integer<100..103>|Integer<200..208>|Integer<226..226>|Integer<300..304>|Integer<307..308>|Integer<400..418>|Integer<421..426>|Integer<428..429>|Integer<431..431>|Integer<451..451>|Integer<500..508>|Integer<510..511>);
+
+HttpRequestHandler = [
+    handle: ^HttpServerRequest => HttpResponse
+];
+
+HttpMiddleware = [
+    process: ^[request: HttpServerRequest, handler: HttpRequestHandler] => HttpResponse
+];
+
+HttpMessage = [
+    protocolVersion: HttpProtocolVersion,
+    headers: Map<Array<String>>,
+    body: HttpMessageBody
+];
+
+HttpResponse = (HttpMessage & [
+    statusCode: HttpStatusCode
+]);
+
+HttpRequest = (HttpMessage & [
+    requestTarget: HttpRequestTarget,
+    method: HttpRequestMethod
+]);
+
+HttpServerRequest = (HttpRequest & [
+    serverParams: Map,
+    cookieParams: Map,
+    queryParams: Map,
+    uploadedFiles: (Array|Map),
+    parsedBody: (Array|Null|Map),
+    attributes: Map
+]);
+
+HttpMessageInterface = [
+    withBody: ^[body: HttpMessageBody] => HttpMessage
+];
+
+HttpResponseInterface = [
+    withStatusCode: ^[statusCode: HttpStatusCode] => HttpResponse
+];
+
+HttpMessage ==> HttpMessageInterface :: [
+    withBody: ^[body: HttpMessageBody] => HttpMessage :: {
+        $->with[body: #.body]
+    }
+];
+
+String ==> HttpProtocolVersion @@ InvalidHttpProtocolVersion :: {
+    ($) ?= {
+        | "1.0": HttpProtocolVersion.HTTP1
+        | "1.1": HttpProtocolVersion.HTTP11
+        | "2.0": HttpProtocolVersion.HTTP2
+        | ~: @InvalidHttpProtocolVersion($)
+    }
+};

@@ -1,0 +1,14 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+PositiveInteger = Integer<1..>;
+Point ==> String :: {
+    {""}->concatList["{", {$.x}->asText, ",", {$.y}->asText, "}"]
+};
+Suit = :[Spades, Hearts, Diamonds, Clubs];
+pi = 3.1415927;
+
+main = ^Array<PositiveInteger> => Any @@ :: {
+    {Point[pi, 42]}->asText
+};

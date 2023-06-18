@@ -1,0 +1,27 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+fizzBuzz = ^PositiveInteger => String :: {
+    ?? {
+        | {{#} % 15} == 0 : "fizzbuzz"
+        | {{#} % 3} == 0 : "fizz"
+        | {{#} % 5} == 0 : "buzz"
+        | ~ : #->asText
+    }
+};
+
+fizzBuzzRange = ^PositiveInteger => Array<String> :: {
+    {{1}->upTo(#)}->map(fizzBuzz)
+};
+
+main = ^Array<String> => Any :: @@ {
+    (! {{#} <: {[String]}}) ?== {
+        | "Please provide exactly 1 argument"
+        | {
+            x = {#->item(0)}->asIntegerNumber;
+            (x) ?<: { | PositiveInteger : fizzBuzzRange(x) | ~ : "Please provide a positive integer number" }
+        }
+    }
+};
+

@@ -1,0 +1,226 @@
+-> Product;
+
+fn1 = ^Null => Integer :: {
+    x = 3
+};
+
+Suit = :[Spades, Hearts, Diamonds, Clubs];
+Point <: [x: Real, y: Real];
+Point3d = [x: Integer, y: Real, z: Real];
+
+HasArea <: [area: ^Null => Real];
+
+Point ==> HasArea :: {
+    x = $.x;
+    HasArea([
+        area: ^Null => Real :: x
+    ])
+};
+
+Point ==> Any :: [
+    y: ^Null => Real :: $.y
+];
+
+pointB = ^Point => Real :: 3.14;
+
+WithError1 <: [x: Real] @ InvalidProductId :: {
+    @ InvalidProductId()
+};
+WithError2 <: [x: Real] @@ :: {
+    @ InvalidProductId()
+};
+
+withErrorFn11 = ^Integer => WithError1 @ InvalidProductId :: WithError1([x: #]);
+withErrorFn12 = ^Integer => WithError1 @@                 :: WithError1([x: #]);
+withErrorFn13 = ^Integer => (WithError1|InvalidProductId) :: {
+    @ { WithError1([x: #]) }
+};
+withErrorFn14 = ^Integer => (WithError1|InvalidProductId) :: {
+    @@ { WithError1([x: #]) }
+};
+
+withErrorFn21 = ^Integer => WithError2 @@                 :: WithError2([x: #]);
+withErrorFn22 = ^Integer => WithError2 @@ :: {
+    @ { WithError2([x: #]) }
+};
+withErrorFn23 = ^Integer => (WithError2|RuntimeError) :: {
+    @@ { WithError2([x: #]) }
+};
+
+EmptyTuple = [];
+EmptyRecord = [:];
+Handler = ^Integer => Real;
+HandlerX = ^Real => Integer;
+
+myNull = null;
+myOne = 1;
+emptyTuple = [];
+emptyRecord = [:];
+handler = ^Integer => Real;
+
+myHandler = ^Real => Integer :: -9;
+
+fnArray = ^Array<(Integer|Real), 2..5> => Array<Real> :: #;
+
+UnknownDatabase <: Null;
+
+InvalidProductId <: Null;
+ProductId <: Integer<1..>;
+
+getPoint = ^Null => Point :: Point([x: -1, y: 3.14]);
+getPoint3d = ^Null => Point3d :: [x: -1, y: 3.14, z: 42];
+getPointWhat = ^Integer<1..2> => (Point|Point3d) :: {
+    (#) ?= {
+        | 1 : Point([x: 20, y: 2.71])
+        | 2 : [x: 3, y: 13, z: 23]
+    }
+};
+
+throwsFn = ^Integer<1..3> => Real @@ InvalidProductId :: {
+    (#) ?= {
+        | 1 : => 3.14
+        | 2 : @ InvalidProductId()
+        | 3 : @ UnknownDatabase()
+    }
+};
+
+throwsFn1 = ^Integer<1..3> => Real @@ InvalidProductId :: throwsFn(#);
+throwsFn2 = ^Integer<1..3> => Real @@                  :: throwsFn(#);
+throwsFn3 = ^Integer<1..3> => (Real|InvalidProductId) @@ :: {
+    @ { throwsFn(#) }
+};
+throwsFn4 = ^Integer<1..3> => (Real|InvalidProductId|RuntimeError) :: {
+    @@ { throwsFn(#) }
+};
+
+throwsXFn = ^Integer<1..2> => Real @ InvalidProductId :: {
+    (#) ?= {
+        | 1 : => 3.14
+        | 2 : @ InvalidProductId()
+    }
+};
+
+throwsXFn1 = ^Integer<1..2> => Real @ InvalidProductId :: throwsXFn(#);
+throwsXFn2 = ^Integer<1..2> => Real @@                 :: throwsXFn(#);
+throwsXFn3 = ^Integer<1..2> => (Real|InvalidProductId) :: {
+    @ { throwsXFn(#) }
+};
+throwsXFn4 = ^Integer<1..2> => (Real|InvalidProductId) :: {
+    @@ { throwsXFn(#) }
+};
+
+passFn = ^Handler => Real :: #(7);
+passFnX = ^HandlerX => Integer :: #(3.14);
+
+generateId = ^Null => Integer :: ProductId(42);
+
+round = ^Real => Integer :: 42;
+
+getEnumValue = ^Null => Suit :: Suit.Spades;
+
+pId = ^Integer => ProductId @ InvalidProductId :: {
+    (#) ?<: {
+        | Integer<1..> : ProductId(#)
+        | ~ : @ InvalidProductId()
+    }
+};
+
+ClosureType = ^Integer<1..2> => Real;
+closureFn = ^Real => ClosureType :: {
+    x = #;
+    ^Integer<1..2> => Real :: {
+        (#) ?= {
+            | 1 : 3.3
+            | 2 : x
+        }
+    }
+};
+
+XRet = ^Integer => XyRet;
+XyRet = ^Integer => Integer;
+xyz = ^Integer => XRet :: {
+    x = #;
+    ^Integer => XyRet :: {
+        y = #;
+        ^Integer => Integer :: {
+            (#) ?= {
+                | 1 : x
+                | 2 : y
+            }
+        }
+    }
+};
+
+main = ^Array<String> => Any @@ :: {
+    Any;
+    Nothing;
+    True;
+    False;
+    Boolean;
+    Real;
+    Integer;
+    String;
+    Array;
+    Map;
+    Null;
+    true;
+    false;
+    3.14;
+    1;
+    null;
+    "Hello";
+    Suit.Hearts;
+    [3.14, 1, "Hello"];
+    [x: true, y: null];
+
+    @ { 3.14 };
+    v1 = (#->item(0)) ?== {
+        | 5
+        | 6
+    };
+    v2 = (#->item(0)) ?= {
+        | 1 : 2
+        | 3 : 4
+        | ~ : 6
+    };
+    v3 = (#->item(0)) ?<: {
+        | String : 2
+        | Real : 4
+        | ~ : 6
+    };
+    v4 = ?? {
+        | #->item(0) : 3.14
+        | 2 : 42
+    };
+    v5 = False;
+    v6 = round(3.14);
+    v7 = ProductId(11);
+    v8 = generateId();
+
+    x = -5;
+    v9 = @ { pId(x) };
+    v10 = Point([x: 3.14, y: 1]);
+    v11 = getEnumValue();
+    v12 = getPoint();
+    v13 = getPoint3d();
+    v14 = getPointWhat(1);
+    v15 = passFn(myHandler);
+    v16 = passFnX(myHandler);
+    fnArray([1, 2, 3.14]);
+
+    v17 = @@ { throwsFn(2) };
+    v18 = pointB(Point([x: 5.2, y: 8.4]));
+    v19 = v10.y;
+    v20 = {closureFn(15)}(1);
+    v21 = {closureFn(15)}(2);
+    v22 = {{xyz(3)}(4)}(1);
+    v23 = {{xyz(3)}(4)}(2);
+
+    x;
+    [x, [a: -7, b: #->item(0), c: Suit.Hearts],
+        v1, v2, v3, v4, v5, v6, v7, v8, v9, v10.y, v11, v12.x, v13.z,
+        v14.x, v15, v16, v17, v18, v19, v20, v21, v22, v23]
+};
+
+tupleFn = ^Integer => Array :: [];
+recordFn = ^Integer => Map :: [:];

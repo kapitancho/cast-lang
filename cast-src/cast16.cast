@@ -1,0 +1,24 @@
+-> Product;
+//
+
+Suit = :[Spade, Heart, Diamond, Club];
+Apple = [asText: ^Null => String];
+Suit ==> Apple :: [
+    asText: ^Null => String :: {
+        {$->textValue}->concat(" suit")
+    }
+];
+
+main = ^Array<String> => Any @@ :: {
+    a = Suit.Spade;
+    [
+        a,
+        a->textValue,
+        a->asText,
+        a->type,
+        {a->type}->value,
+        {a->type}->values,
+        {a->type}->valueWithName("Heart"),
+        @{{a->type}->valueWithName("Mario")}
+    ]
+};

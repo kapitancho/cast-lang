@@ -1,0 +1,83 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+ProductId <: PositiveInteger;
+Suit = :[Spade, Heart, Diamond, Club];
+
+SpadeType = Suit[Spade];
+ComplexType = (False|(Map&True&[Real, Real])|Array|[a: Integer, b: Boolean]);
+
+Integer ==> String :: "This is an integer";
+
+myVar = [
+    boolean: true,
+    real: 3.14,
+    integer: 42,
+    string: "Hello",
+    null: null,
+    type: Any,
+    others: [Suit.Spade, ^Any => String :: "Test"]
+];
+
+getI = ^Integer => Real :: {
+    ?? {
+        | # : 3.14
+        | ~ : 42
+    }
+};
+
+getS = ^String => Boolean :: {
+    (#) ?== { false | true }
+};
+
+getR = ^Real => String @ WrongType :: {
+    (#) ?= {
+        | 2.77 : => "Yes"
+        | 3.52 : @ WrongType()
+        | ~ : "No"
+    }
+};
+
+getList = ^Integer => Array<(Integer|String)> :: {
+    [1, "Hi", 3, #]
+};
+
+getDict = ^Integer => Map<(Integer|String)> :: {
+    [a: 1, b: "Hi", c: 3, d: #]
+};
+
+WrongType <: Null;
+
+getD = ^(Integer|Real|String) => (Real|Boolean|String|WrongType) :: {
+    (#) ?<: {
+        | Integer : getI(#)
+        | Real : @{getR(#)}
+        | String : getS(#)
+    }
+};
+
+MyFuncType = ^Real => Integer;
+getF = ^Integer => MyFuncType :: {
+    x = #;
+    ^Real => Integer :: {
+        (#) ?== { x | -1 }
+    }
+};
+
+main = ^Array<String> => Any :: {
+    [
+        d: getD(1),
+        e: getD(0),
+        f: getD(2.77),
+        g: getD(1.77),
+        h: getD(3.52),
+        i: getD(""),
+        j: getD("Hi"),
+        k: {getF(1)}(2),
+        l: {getF(3)}(0),
+        a: myVar.integer,
+        b: [1],
+        c: myVar.others.1(),
+        r: getF(5)
+    ]
+};

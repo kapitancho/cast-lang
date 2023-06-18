@@ -1,0 +1,23 @@
+-> Product;
+
+main = ^Array<String> => Any :: @@ {
+    t1 = Array<String<10..20>, 3..5>;
+    t2 = Map<(Integer|Boolean), ..10>;
+    t3 = Type<Real<-3.14..20>>;
+    [
+        type1: t1,
+        type2: t2,
+        type3: t3,
+        arrayMinLength: t1->minLength,
+        arrayMaxLength: t1->maxLength,
+        arrayItemType: t1->itemType,
+        stringMinLength: {t1->itemType}->minLength,
+        stringMaxLength: {t1->itemType}->maxLength,
+        mapMinLength: t2->minLength,
+        mapMaxLength: t2->maxLength,
+        mapItemType: t2->itemType,
+        typeRefType: t3->refType,
+        realMinValue: {t3->refType}->minValue,
+        realMaxValue: {t3->refType}->maxValue
+    ]
+};

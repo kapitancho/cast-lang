@@ -1,0 +1,37 @@
+-> Core;
+//
+
+RuntimeError <: [error: Any];
+
+NoCastAvailable <: Null;
+
+Function = ^Nothing => Any;
+Invokable = ^Nothing => Any;
+
+MinusInfinity <: Null;
+PlusInfinity <: Null;
+DivisionByZero <: Null;
+
+StringIsNoIntegerNumber <: String;
+StringIsNoRealNumber <: String;
+SubstringNotInString <: Null;
+
+EnumItemNotFound <: String;
+ArrayItemNotFound <: Any;
+MapItemNotFound <: Any;
+
+JsonValue = (Null|Boolean|String|Real|Array<JsonValue>|Map<JsonValue>);
+InvalidJsonValue <: String;
+
+HydrationFailed <: [value: JsonValue, path: String, message: String];
+
+DatabaseConnection <: [dsn: String];
+DatabaseValue = (Integer|String|Null);
+BoundParameters = Map<DatabaseValue>;
+QueryResult = Array<QueryResultRow>;
+QueryResultRow = Map<DatabaseValue>;
+QueryFailure <: [query: String, boundParameters: Map<(Integer|String|Null)>, error: String];
+
+ContainerConfiguration = Array<[Type, (Map|Type|Function)]>;
+Container <: [cfg: ContainerConfiguration];
+ContainerError <: [~Type, message: String];

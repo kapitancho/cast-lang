@@ -1,0 +1,71 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+Point2 <: [x: Integer<0..200>, y: Integer<-3000..10>];
+
+Point ==> String :: {
+    {""}->concatList["{", {$.x}->asText, ",", {$.y}->asText, "}"]
+};
+
+Point ==> Invokable :: ^Real => Point :: {
+    Point[{$.x} * {#}, {$.y} * {#}]
+};
+
+pointToString = ^Point => String<5..2211> :: {
+    {""}->concatList["{", {#.x}->asText, ",", {#.y}->asText, "}"]
+};
+
+fn = ^Integer<1..40> => Point :: {
+    Point[#, {#} * 2]
+};
+
+reflectType = ^Type<Type> => Type :: {
+    #->refType
+};
+
+reflectArray = ^Type<Array> => [Type, Integer<0..>, (Integer<0..>|PlusInfinity)] :: {
+    [#->itemType, #->minLength, #->maxLength, reflectType(#->type)]
+};
+
+reflectMap = ^Type<Map> => [Type, Integer<0..>, (Integer<0..>|PlusInfinity)] :: {
+    [#->itemType, #->minLength, #->maxLength]
+};
+
+reflectString = ^Type<String> => [Integer<0..>, (Integer<0..>|PlusInfinity)] :: {
+    [#->minLength, #->maxLength]
+};
+
+reflectInteger = ^Type<Integer> => [(Integer|MinusInfinity), (Integer|PlusInfinity)] :: {
+    [#->minValue, #->maxValue]
+};
+
+reflectReal = ^Type<Real> => [(Real|MinusInfinity), (Real|PlusInfinity)] :: {
+    [#->minValue, #->maxValue]
+};
+
+Z1 = String<10..30>;
+Z2 = Array<String, 5..100>;
+Z3 = Map<String<1..10>, 5..100>;
+Z4 = Integer<10..30>;
+Z5 = Real<3.14..5.13>;
+
+main = ^Array<String> => Any @@ :: {
+    p = Point[4, 7];
+    [
+        {fn(20)}->asText,
+        pointToString(Point[4, 7]),
+        {["A", "B", "C"]}->combineAsText(", "),
+        p(5),
+        reflectString(Z1),
+        reflectString(String),
+        reflectArray(Z2),
+        reflectArray(Array),
+        reflectMap(Z3),
+        reflectMap(Map),
+        reflectInteger(Z4),
+        reflectInteger(Integer),
+        reflectReal(Z5),
+        reflectReal(Real)
+    ]
+};

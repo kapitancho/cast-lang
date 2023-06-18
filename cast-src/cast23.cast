@@ -1,0 +1,99 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+PositiveInteger = Integer<1..>;
+Point ==> String :: {
+    {""}->concatList["{", {$.x}->asText, ",", {$.y}->asText, "}"]
+};
+Suit = :[Spades, Hearts, Diamonds, Clubs];
+pi = 3.1415927;
+
+suit = ^String => Suit @ EnumItemNotFound :: {
+    {Suit}->valueWithName(#)
+};
+
+InvalidProductId <: Any;
+ProductId = Integer<1..>;
+
+InvalidProductName <: Any;
+ProductName = String<1..>;
+Product <: [~ProductId, ~ProductName];
+
+Map ==> Product @ (MapItemNotFound|NoCastAvailable) :: {
+    Product[
+        {$->item("id")}->as(ProductId),
+        {$->item("name")}->as(ProductName)
+    ]
+};
+Product ==> Map :: {
+    [productId: $.productId, productName: $.productName]
+};
+
+getData = ^DatabaseConnection => Array<Map<(String|Integer|Null)>> @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    data = #->query[query: "SELECT id, name FROM cast4 limit 3", boundParameters: []];
+    data->map(mapToProduct)
+};
+
+mapToProduct = ^Map => Product @ (MapItemNotFound|NoCastAvailable) :: {
+    Product[
+        {#->item("id")}->as(ProductId),
+        {#->item("name")}->as(ProductName)
+    ]
+};
+
+getDataX = ^DatabaseConnection => Array<Product> @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    data = #->query[query: "SELECT id, name FROM cast4 limit 3", boundParameters: []];
+    data->map(mapToProductX)
+};
+
+mapToProductX = ^Map => Product @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    #->as(Product)
+};
+
+getDataY = ^[~DatabaseConnection, targetType: Type] => Array @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    data = #databaseConnection->query[query: "SELECT id, name FROM cast4 limit 3", boundParameters: []];
+    data->map(mapToProductY[#targetType])
+};
+
+MapX = ^Map => Any @ (MapItemNotFound|NoCastAvailable|QueryFailure);
+
+mapToProductY = ^[targetType: Type] => MapX :: {
+    ^Map => Any @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+        #->as(#targetType)
+    }
+};
+
+ProductArray = Array<Product>;
+
+getDataZ = ^[~DatabaseConnection] => Array @ (MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    c = getDataY[#databaseConnection, Product];
+    c->as(ProductArray)
+};
+
+getRow = ^DatabaseConnection => Map<(String|Integer|Null)> @ (ArrayItemNotFound|MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    data = #->query[query: "SELECT id, name FROM cast4 limit 3", boundParameters: []];
+    row = data->item(0);
+    mapToProduct(row)
+};
+
+getRowE = ^DatabaseConnection => Map<(String|Integer|Null)> @ (ArrayItemNotFound|MapItemNotFound|NoCastAvailable|QueryFailure) :: {
+    data = #->query[query: "SELECT id, name FOM cast4 limit 3", boundParameters: []];
+    row = data->item(0);
+    mapToProduct(row)
+};
+
+main = ^Array<PositiveInteger> => Any @@ :: {
+    {Point[pi, 42]}->asText;
+    connection = DatabaseConnection["sqlite:db.sqlite"];
+    [
+        suit("Spades"),
+        @{suit("King")},
+        getData(connection),
+        getDataX(connection),
+        getDataY[connection, Product],
+        getDataZ[connection],
+        getRow(connection),
+        @{getRowE(connection)}
+    ]
+};

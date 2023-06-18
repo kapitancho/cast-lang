@@ -1,0 +1,135 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+
+KeyNotFound <: String;
+ValueAdded <: Null;
+ValueReplaced <: Null;
+ValueRemoved <: Null;
+
+
+KeyValueStorage = [
+    hasWithKey: ^[key: String] => Boolean,
+    getByKey: ^[key: String] => Map @ KeyNotFound,
+    storeByKey: ^[key: String, value: Map] => (ValueAdded|ValueReplaced),
+    removeByKey: ^[key: String] => ValueRemoved @ KeyNotFound
+];
+
+InMemoryKeyValueStorage <: [storage: Mutable<Map>];
+
+InMemoryKeyValueStorage ==> KeyValueStorage :: [
+    hasWithKey: ^[key: String] => Boolean :: {
+        {$.storage->value}->keyExists(#.key)
+    },
+    getByKey: ^[key: String] => Map @ KeyNotFound :: {
+        item = @{{$.storage->value}->item(#.key)};
+        (item) ?<: {
+            | MapItemNotFound: @ KeyNotFound(#.key)
+            | Map: item
+        }
+    },
+    storeByKey: ^[key: String, value: Map] => (ValueAdded|ValueReplaced) :: {
+        keyExists = {$.storage->value}->keyExists(#.key);
+        $.storage->SET({$.storage->value}->withKeyValue[key: #.key, value: #.value]);
+        (keyExists) ?== { ValueReplaced() | ValueAdded() }
+    },
+    removeByKey: ^[key: String] => ValueRemoved @ KeyNotFound :: {
+        keyExists = {$.storage->value}->keyExists(#.key);
+        (keyExists) ?== { {
+            $.storage->SET({$.storage->value}->withoutByKey(#.key));
+            ValueRemoved()
+        } | @ KeyNotFound(#.key) }
+    }
+];
+
+InvalidProductId <: Any;
+ProductId = Integer<1..>;
+
+InvalidProductName <: Any;
+ProductName = String<1..>;
+Product <: [~ProductId, ~ProductName];
+
+ProductNotFound <: ProductId;
+ProductAdded <: Null;
+ProductReplaced <: Null;
+ProductRemoved <: Null;
+
+ProductRepository = [
+    byId: ^[~ProductId] => Product @ ProductNotFound,
+    store: ^[~Product] => (ProductAdded|ProductReplaced),
+    remove: ^[~ProductId] => ProductRemoved @ ProductNotFound,
+    all: ^Null => Array<Product>
+];
+
+KeyValueStorageProductRepository <: [~KeyValueStorage];
+
+Any ==> ProductId @ InvalidProductId :: {
+    ($) ?<: {
+        | Integer<1..>: $
+        | ~: @ InvalidProductId($)
+    }
+};
+
+Any ==> ProductName @ InvalidProductName :: {
+    ($) ?<: {
+        | String<1..>: $
+        | ~: @ InvalidProductName($)
+    }
+};
+
+Map ==> Product :: {
+    Product[
+        {@{$->item("productId")}}->as(ProductId),
+        {@{$->item("productName")}}->as(ProductName)
+    ]
+};
+Product ==> Map :: {
+    [productId: $.productId, productName: $.productName]
+};
+
+KeyValueStorageProductRepository ==> ProductRepository :: [
+    byId: ^[~ProductId] => Product @ ProductNotFound :: {
+        data = @{$.keyValueStorage.getByKey[#.productId->asText]};
+        (data) ?<: {
+            | KeyNotFound: @ ProductNotFound(#.productId)
+            | Map: data->as(Product)
+        }
+    },
+    store: ^[~Product] => (ProductAdded|ProductReplaced) :: {
+        key = #.product.productId->asText;
+        exists = $.keyValueStorage.hasWithKey[key];
+        $.keyValueStorage.storeByKey[key, #.product->as(Map)];
+        (exists) ?== { ProductReplaced() | ProductAdded() }
+    },
+    remove: ^[~ProductId] => ProductRemoved @ ProductNotFound :: ProductRemoved(),
+    all: ^Null => Array<Product> :: []
+];
+
+main = ^Array<String> => Any @@ :: {
+    p = Point[4, 7];
+    storage = InMemoryKeyValueStorage[Mutable[Map, [:]]];
+    step1 = @{storage->getByKey[key: "x"]};
+    step2 = storage->storeByKey[key: "x", value: [k: 1]];
+    step3 = storage->getByKey[key: "x"];
+    step4 = storage->storeByKey[key: "x", value: [k: 2]];
+    step5 = storage->getByKey[key: "x"];
+    step6 = storage->removeByKey[key: "x"];
+    step7 = @{storage->getByKey[key: "x"]};
+    step8 = @{storage->removeByKey[key: "x"]};
+    storage->storeByKey[key: "5", value: [productId: 5, productName: "Product Test"]];
+    repo = KeyValueStorageProductRepository([storage->as(KeyValueStorage)]);
+    product5 = @{repo->byId[productId: 5]};
+    product6a = @{repo->byId[productId: 6]};
+    step11 = repo->store[product: Product[6, "Cool Product"]];
+    product6b = @{repo->byId[productId: 6]};
+    [
+        p,
+        step1, step2, step3, step4, step5, step6, step7, step8,
+        {["A", "B", "C"]}->combineAsText(", "),
+        product5,
+        product6a,
+        step11,
+        product6b
+    ]
+};

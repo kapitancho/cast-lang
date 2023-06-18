@@ -1,0 +1,31 @@
+-> Product;
+
+change = ^[x: Mutable<Integer>] => Integer :: {
+    #.x->SET({#.x->value} + 1)
+};
+
+MyCounter = [a: Boolean, b: Mutable<Real>];
+
+changeCounter = ^MyCounter => Real :: {
+    old = #.b->value;
+    #.b->SET({old} + 2.3);
+    old
+};
+
+main = ^Array<String> => Any :: @@ {
+    val = Mutable[Integer, 0];
+    ctr = [a: true, b: Mutable[Real, 0.5]];
+    [
+        mutate: [
+            change[val],
+            change[val],
+            change[val]
+        ],
+        counter: [
+            ctr.b->value,
+            changeCounter(ctr),
+            changeCounter(ctr),
+            ctr
+        ]
+    ]
+};

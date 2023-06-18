@@ -1,0 +1,118 @@
+-> Product;
+
+MyNumbers <: Map<Integer>;
+MyProduct <: [id: Integer, name: String];
+
+main = ^Array<String> => Any :: @@ {
+    m1 = [a: 1, b: "hi", c: 3.14];
+    m2 = [c: "Hello", d: "my", e: "Friend"];
+    m3 = m1;
+    m4 = MyNumbers[days: 3, duration: 10];
+    m5 = MyProduct[id: 5, name: "My Product"];
+    [
+        map1: m1,
+        map2: m2,
+        map3: m3,
+        map4: m4,
+        map5: m5,
+
+        keys: m1->keys,
+        values: m1->values,
+        item: m1->item("b"),
+        itemNotFound: @{m1->item("x")},
+        contains: m1->contains("hi"),
+        keyOf: m1->keyOf("hi"),
+        keyOfNotFound: @{m1->keyOf("bye")},
+
+        withKeyValue: m1->withKeyValue[key: "d", value: true],
+        mergeWith: m1->mergeWith(m2),
+        withoutByKey: m1->withoutByKey("b"),
+        withoutByKeyNotFound: @{m1->withoutByKey("x")},
+        without: m1->without(3.14),
+        withoutNotFound: @{m1->without(7.29)},
+
+        recordWith: m3->with[c: 10, d: false],
+
+        map: m2->map(^String => Integer :: #->length),
+        mapKeyValue: m2->mapKeyValue(^[key: String, value: String] => [key: String, value: Integer] :: [
+            key: #.key->concat("x"),
+            value: #.value->length
+        ]),
+        filter: m2->filter(^String => Boolean :: #->contains("e")),
+        filterKeyValue: m2->filterKeyValue(^[key: String, value: String] => Boolean :: {
+            {#.value->contains("e")} && {{#.key} != "c"}
+        }),
+        findFirst: m2->findFirst(^String => Boolean :: #->contains("e")),
+        findFirstNotFound: @{m2->findFirst(^String => Boolean :: #->contains("x"))},
+        findFirstKeyValue: m2->findFirstKeyValue(^[key: String, value: String] => Boolean :: {
+            {#.value->contains("e")} && {{#.key} != "c"}
+        }),
+        findFirstKeyValueNotFound: @{m2->findFirstKeyValue(^[key: String, value: String] => Boolean :: #.value->contains("x"))},
+
+        flip: m2->flip,
+
+        mapSubtypeValues: m4->values,
+        recordSubtypeValues: m5->values,
+
+        types: typeDemo[m1, m2, m3, m4, m5]
+    ]
+};
+
+typeDemo = ^[
+    m1: Map<(String|Real), 2..5>,
+    m2: Map<String, 2..5>,
+    m3: [a: Integer, b: String, c: Real],
+    m4: MyNumbers,
+    m5: MyProduct
+] => Type @ MapItemNotFound :: {
+    m1 = #.m1;
+    m2 = #.m2;
+    m3 = #.m3;
+    m4 = #.m4;
+    m5 = #.m5;
+    {[
+        map1: m1,
+        map2: m2,
+        map3: m3,
+        map4: m4,
+        map5: m5,
+
+        keys: m1->keys,
+        values: m1->values,
+        item: m1->item("b"),
+        itemNotFound: @{m1->item("x")},
+        contains: m1->contains("hi"),
+        keyOf: m1->keyOf("hi"),
+        keyOfNotFound: @{m1->keyOf("bye")},
+
+        withKeyValue: m1->withKeyValue[key: "d", value: true],
+        mergeWith: m1->mergeWith(m2),
+        withoutByKey: m1->withoutByKey("b"),
+        withoutByKeyNotFound: @{m1->withoutByKey("x")},
+        without: m1->without(3.14),
+        withoutNotFound: @{m1->without(7.29)},
+
+        recordWith: m3->with[c: 10, d: false],
+
+        map: m2->map(^String => Integer :: #->length),
+        mapKeyValue: m2->mapKeyValue(^[key: String, value: String] => [key: String, value: Integer] :: [
+            key: #.key->concat("x"),
+            value: #.value->length
+        ]),
+        filter: m2->filter(^String => Boolean :: #->contains("e")),
+        filterKeyValue: m2->filterKeyValue(^[key: String, value: String] => Boolean :: {
+            {#.value->contains("e")} && {{#.key} != "c"}
+        }),
+        findFirst: m2->findFirst(^String => Boolean :: #->contains("e")),
+        findFirstNotFound: @{m2->findFirst(^String => Boolean :: #->contains("x"))},
+        findFirstKeyValue: m2->findFirstKeyValue(^[key: String, value: String] => Boolean :: {
+            {#.value->contains("e")} && {{#.key} != "c"}
+        }),
+        findFirstKeyValueNotFound: @{m2->findFirstKeyValue(^[key: String, value: String] => Boolean :: #.value->contains("x"))},
+
+        flip: m2->flip,
+
+        mapSubtypeValues: m4->values,
+        recordSubtypeValues: m5->values
+    ]}->compilationType
+};

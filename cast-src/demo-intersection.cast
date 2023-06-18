@@ -1,0 +1,41 @@
+-> Product;
+
+Timestamp = Integer<0..>;
+RevisionTime = [hour: Integer<0..23>, minute: Integer<0..59>];
+
+TitleProvider = [getTitle: ^Null => String];
+TimestampProvider = [getLastModification: ^Null => Timestamp];
+RevisionProvider = [getRevisionTime: ^Null => RevisionTime];
+
+ProductData = [title: String, modifiedAt: Timestamp];
+PageTextData = [title: String, revision: RevisionTime];
+
+ProductWithText <: (ProductData&PageTextData);
+
+ProductData ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.title
+];
+ProductData ==> TimestampProvider :: [
+    getLastModification: ^Null => Timestamp :: $.modifiedAt
+];
+
+PageTextData ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.title
+];
+PageTextData ==> RevisionProvider :: [
+    getRevisionTime: ^Null => RevisionTime :: $.revision
+];
+
+determineTitle = ^(ProductData&PageTextData) => String :: #->getTitle;
+determineLastModification = ^(ProductData&PageTextData) => Timestamp :: #->getLastModification;
+determineRevisionTime = ^(ProductData&PageTextData) => RevisionTime :: #->getRevisionTime;
+
+main = ^Array<String> => Any :: @@ {
+    obj1 = [title: "My Product Title", modifiedAt: 777777, revision: [hour: 23, minute: 37]];
+    obj2 = ProductWithText[title: "Your Product Title", modifiedAt: 434343, revision: [hour: 11, minute: 04]];
+    [
+        determineTitle(obj1), determineTitle(obj2),
+        determineLastModification(obj1), determineLastModification(obj2),
+        determineRevisionTime(obj1), determineRevisionTime(obj2)
+    ]
+};

@@ -1,0 +1,72 @@
+-> Product;
+
+Suit = :[Spades, Clubs, Hearts, Diamonds];
+
+spadeType = Suit[Spades];
+
+InvalidStatus <: (String|Integer|Real|Boolean|Null);
+Status = :[Pending, Accepted, Rejected];
+String ==> Status @ InvalidStatus :: {
+    ($) ?= {
+        | "?": Status.Pending
+        | "yes": Status.Accepted
+        | "no": Status.Rejected
+        | ~: @InvalidStatus($)
+    }
+};
+Integer ==> Status @ InvalidStatus :: {
+    ($) ?= {
+        | 0: Status.Pending
+        | 1: Status.Accepted
+        | -1: Status.Rejected
+        | ~: @InvalidStatus($)
+    }
+};
+Real ==> Status @ InvalidStatus :: {
+    ($) ?= {
+        | 0: Status.Pending
+        | 1.5: Status.Accepted
+        | -1.5: Status.Rejected
+        | ~: @InvalidStatus($)
+    }
+};
+Boolean ==> Status :: {
+    ($) ?= {
+        | true: Status.Accepted
+        | false: Status.Rejected
+    }
+};
+Null ==> Status :: Status.Pending;
+
+main = ^Array<String> => Any :: @@ {
+    spade = Suit.Spades;
+    t = Suit;
+    [
+        byValue: [
+            value: spade,
+            type: spade->type,
+            textValue: spade->textValue,
+            allValues: spade->values
+        ],
+        byValueType: [
+            value: spadeType->value,
+            type: spadeType,
+            textValue: {spadeType->value}->textValue,
+            allTypeValues: spadeType->values,
+            typeValueWithName: spadeType->valueWithName("Clubs")
+        ],
+        byEnumType: [
+            allEnumValues: t->values,
+            enumValueWithName: t->valueWithName("Clubs")
+        ],
+        hydrated: {"Clubs"}->hydrateAs(Suit),
+        customHydratedString: {"yes"}->hydrateAs(Status),
+        customHydratedStringInvalid: @{{"hello"}->hydrateAs(Status)},
+        customHydratedInteger: @{{1}->hydrateAs(Status)},
+        customHydratedIntegerInvalid: @{{999}->hydrateAs(Status)},
+        customHydratedReal: @{{1.5}->hydrateAs(Status)},
+        customHydratedRealInvalid: @{{-999.99}->hydrateAs(Status)},
+        customHydratedBoolean: @{{false}->hydrateAs(Status)},
+        customHydratedNull: @{{null}->hydrateAs(Status)}
+    ]
+};

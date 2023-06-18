@@ -1,0 +1,316 @@
+-> Product;
+//
+
+A = Any;
+
+Suit = :[Spades, Hearts, Diamonds, Clubs];
+HttpRequestHandlerX = ^[request: HttpRequest] => HttpResponse;
+HttpMiddlewareX = ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse;
+
+CompositeHandler <: [defaultHandler: HttpRequestHandlerX, middlewares: Array<HttpMiddlewareX>];
+
+CompositeHandler ==> HttpRequestHandlerX :: {
+    ^[request: HttpRequest] => HttpResponse :: {
+        ($.middlewares) ?<: {
+            | Array<1..>: {
+                m = $.middlewares->withoutFirst;
+                m.element[#.request, {CompositeHandler[$.defaultHandler, m.array]}->as(HttpRequestHandlerX)]
+            }
+            | ~: $.defaultHandler[#.request]
+        }
+    }
+};
+
+ResponseFactory = [
+    createResponse: ^HttpStatusCodeX => HttpResponse
+];
+
+HttpFactory <: [];
+
+HttpFactory ==> ResponseFactory :: {
+    [
+        createResponse: ^HttpStatusCodeX => HttpResponse :: {
+            [
+                statusCode: #,
+                protocolVersion: HttpProtocolVersion.HTTP11,
+                headers: [:],
+                body: ""
+            ]
+        }
+    ]
+};
+
+
+
+NotFoundHandler <: [~ResponseFactory];
+NotFoundHandler ==> HttpRequestHandlerX :: {
+    ^[request: HttpRequest] => HttpResponse :: {
+        $.responseFactory.createResponse(404)
+    }
+};
+
+UncaughtExceptionHandler <: [~ResponseFactory];
+UncaughtExceptionHandler ==> HttpMiddlewareX :: {
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        result = @@{#.handler[#.request]};
+        (result) ?<: {
+            | HttpResponse: result
+            | RuntimeError: $.responseFactory.createResponse(500)
+        }
+    }
+};
+
+Logger = [
+    log: ^String => Null
+];
+RequestLogger <: [~Logger];
+RequestLogger ==> HttpMiddlewareX :: {
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        $.logger.log("Request=...");
+        result = #.handler[#.request];
+        $.logger.log("Response=...");
+        result
+    }
+};
+
+T = (Null|HttpRequestHandlerX);
+
+LookupRouter <: [routerMapping: Map<Type>, ~Container];
+LookupRouter ==> HttpMiddlewareX :: {
+    run = ^[request: HttpRequest, ~Type] => HttpResponse @@ :: {
+        handler = $.container->instanceOf(#.type);
+        rh = handler->as(HttpRequestHandlerX);
+        rh[#.request]
+    };
+
+    ^[request: HttpRequest, handler: HttpRequestHandlerX] => HttpResponse :: {
+        request = #.request;
+        withUpdatedRequestPath = ^[path: String] => HttpRequest :: {
+            {request->with[requestTarget:
+                request.requestTarget->substring[start: #.path->length, end: 9999]
+            ]}->as(HttpRequest)
+        };
+
+        kv = @{$.routerMapping->findFirstKeyValue(
+            ^[key: String, value: HttpRequestHandlerX] => Boolean :: {
+                request.requestTarget->startsWith(#.key)
+            }
+        )};
+        (kv) ?<: {
+            | [key: String, value: Type] : run[withUpdatedRequestPath[kv.key], kv.value]
+            | ~: #.handler[request]
+        }
+    }
+};
+
+
+SurveyTitle = String<1..80>;
+Link = (String<1..255>|Null);
+SurveyDescription = (String|Null);
+RepeatableSurvey = Boolean;
+
+SurveyTemplateId = Integer<1..>;
+SurveyDetails = [~SurveyTitle, ~Link, ~SurveyDescription, ~RepeatableSurvey];
+SurveyTemplate = [~SurveyTemplateId, ~SurveyDetails];
+
+SurveyTemplate ==> BoundParameters :: [
+    id: $.surveyTemplateId,
+    surveyTitle: $.surveyDetails.surveyTitle,
+    link: $.surveyDetails.link,
+    surveyDescription: $.surveyDetails.surveyDescription,
+    repeatableSurvey: 1
+];
+
+QueryResultRow ==> SurveyTemplate @ (MapItemNotFound|NoCastAvailable|HydrationFailed) :: [
+    surveyTemplateId: {$->item("id")}->as(SurveyTemplateId),
+    surveyDetails: [
+        surveyTitle: {$->item("surveyTitle")}->as(SurveyTitle),
+        link: {$->item("link")}->as(Link),
+        surveyDescription: {$->item("surveyTitle")}->as(SurveyDescription),
+        repeatableSurvey: {{$->item("repeatableSurvey")} == 1}->as(RepeatableSurvey)
+    ]
+];
+
+TemplateNotFound <: [~SurveyTemplateId];
+TemplateAdded <: [~SurveyTemplateId];
+TemplateUpdated <: [~SurveyTemplateId];
+TemplateRemoved <: [~SurveyTemplateId];
+
+SurveyTemplateRepository = [
+    byId: ^[~SurveyTemplateId] => SurveyTemplate @@ TemplateNotFound,
+    store: ^[~SurveyTemplate] => (TemplateAdded|TemplateUpdated) @@,
+    remove: ^[~SurveyTemplateId] => TemplateRemoved @@ TemplateNotFound,
+    all: ^Null => Array<SurveyTemplate> @@
+];
+
+DatabaseSurveyTemplateRepository <: [~DatabaseConnection];
+
+DatabaseSurveyTemplateRepository ==> SurveyTemplateRepository :: [
+    byId: ^[~SurveyTemplateId] => SurveyTemplate @@ TemplateNotFound :: {
+        data = $.databaseConnection->query[query: "SELECT id, survey_title AS surveyTitle, link, survey_description AS surveyDescription, repeatable_survey AS repeatableSurvey FROM survey_templates WHERE id = ?", boundParameters: [#.surveyTemplateId]];
+        row = @{data->item(0)};
+        (row) ?<: {
+            | ArrayItemNotFound: @ TemplateNotFound[#.surveyTemplateId]
+            | QueryResultRow: row->as(SurveyTemplate)
+        }
+    },
+    store: ^[~SurveyTemplate] => (TemplateAdded|TemplateUpdated) @@ :: {
+        data = $.databaseConnection->query[query: "SELECT id, survey_title AS surveyTitle, link, survey_description AS surveyDescription, repeatable_survey AS repeatableSurvey FROM survey_templates WHERE id = ?", boundParameters: [#.surveyTemplate.surveyTemplateId]];
+        row = @{data->item(0)};
+        (row) ?<: {
+            | ArrayItemNotFound: {
+                params = #.surveyTemplate->as(BoundParameters);
+                $.databaseConnection->execute[
+                    query: "INSERT INTO survey_templates
+                        (id, survey_title, link, survey_description, repeatable_survey) VALUES
+                        (:id, :surveyTitle, :link, :surveyDescription, :repeatableSurvey)",
+                    boundParameters: params
+                ];
+                TemplateAdded[#.surveyTemplate.surveyTemplateId]
+            }
+            | QueryResultRow: {
+                params = #.surveyTemplate->as(BoundParameters);
+                $.databaseConnection->execute[
+                    query: "UPDATE survey_templates SET
+                        survey_title = :surveyTitle,
+                        link = :link,
+                        survey_description = :surveyDescription,
+                        repeatable_survey = :repeatableSurvey
+                        WHERE id = :id",
+                    boundParameters: params
+                ];
+                TemplateUpdated[#.surveyTemplate.surveyTemplateId]
+            }
+        }
+    },
+    remove: ^[~SurveyTemplateId] => TemplateRemoved @@ TemplateNotFound :: {
+        data = $.databaseConnection->query[query: "SELECT id, survey_title AS surveyTitle, link, survey_description AS surveyDescription, repeatable_survey AS repeatableSurvey FROM survey_templates WHERE id = :surveyTemplateId", boundParameters: #];
+        row = @{data->item(0)};
+        (row) ?<: {
+            | ArrayItemNotFound: @ TemplateNotFound[#.surveyTemplateId]
+            | QueryResultRow: {
+                $.databaseConnection->execute[
+                    query: "DELETE FROM survey_templates WHERE id = :surveyTemplateId",
+                    boundParameters: #
+                ];
+                TemplateRemoved(#)
+            }
+        }
+    },
+    all: ^Null => Array<SurveyTemplate> @@ :: {
+        data = $.databaseConnection->query[
+            query: "SELECT id, survey_title AS surveyTitle, link, survey_description AS surveyDescription, repeatable_survey AS repeatableSurvey FROM survey_templates",
+            boundParameters: []
+        ];
+        data->map(^QueryResultRow => SurveyTemplate :: #->as(SurveyTemplate))
+    }
+];
+
+TemplateService = [
+    updateDetails: ^[~SurveyTemplateId, ~SurveyDetails] => Any @@,
+    createSurveyTemplate: ^[~SurveyTitle] => Any @@,
+    deleteSurveyTemplate: ^[~SurveyTemplateId] => Any @@
+];
+
+TemplateServiceX <: [~SurveyTemplateRepository];
+
+TemplateServiceX ==> TemplateService :: [
+    updateDetails: ^[~SurveyTemplateId, ~SurveyDetails] => Any @@ :: {
+        tpl = $.surveyTemplateRepository.byId[#.surveyTemplateId];
+        tpl = tpl->with[surveyDetails: #.surveyDetails];
+        @@{$.surveyTemplateRepository.store[tpl]}
+    },
+    createSurveyTemplate: ^[~SurveyTitle] => Any @@ :: {
+        tpl = [surveyTemplateId: 10, surveyDetails: [
+            surveyTitle: #.surveyTitle,
+            link: null,
+            surveyDescription: null,
+            repeatableSurvey: false
+        ]];
+        @@{$.surveyTemplateRepository.store[tpl]}
+    },
+    deleteSurveyTemplate: ^[~SurveyTemplateId] => Any @@ :: {
+        @@{$.surveyTemplateRepository.remove(#)}
+    }
+];
+
+TemplateHandler <: [~ResponseFactory, ~TemplateService];
+TemplateHandler ==> HttpRequestHandlerX :: {
+    ^[request: HttpRequest] => HttpResponse :: {
+        templateId = {#.request.requestTarget->substring[start: 1, end: 9999]}->asIntegerNumber;
+        $.responseFactory.createResponse(403);
+        q = (#.request.method) ?= {
+            | HttpRequestMethod.PATCH: $.templateService.updateDetails[
+                surveyTemplateId: templateId->hydrateAs(SurveyTemplateId),
+                surveyDetails: {{#.request.body}->jsonStringToValue}->hydrateAs(SurveyDetails)
+            ]
+            | HttpRequestMethod.POST: $.templateService.createSurveyTemplate[
+                surveyTitle: {{{#.request.body}->jsonStringToValue}->hydrateAs([surveyTitle: SurveyTitle])}.surveyTitle
+            ]
+            | HttpRequestMethod.DELETE: $.templateService.deleteSurveyTemplate[
+                surveyTemplateId: templateId->hydrateAs(SurveyTemplateId)
+            ]
+            | ~: -1
+        };
+        o = (q) ?<: {
+            | TemplateAdded: [
+                statusCode: 201,
+                protocolVersion: #.request.protocolVersion,
+                headers: [Location: [{"templates/"}->concat({q.surveyTemplateId}->asText)]],
+                body: ""
+            ]
+            | TemplateUpdated: $.responseFactory.createResponse(204)
+            | TemplateRemoved: $.responseFactory.createResponse(204)
+            | RuntimeError: [
+                statusCode: 500,
+                protocolVersion: #.request.protocolVersion,
+                headers: [:],
+                body: {q.error->type}->asText
+            ]
+            | ~: $.responseFactory.createResponse(405)
+        }
+    }
+};
+
+getContainerConfig = ^Null => ContainerConfiguration :: {
+    [
+        [DatabaseConnection, [dsn: "sqlite:db.sqlite"]],
+        [CompositeHandler, ^[
+            defaultHandler: NotFoundHandler,
+            ~LookupRouter
+        ] => CompositeHandler :: {
+            CompositeHandler[#.defaultHandler->as(HttpRequestHandlerX), [
+                #.lookupRouter->as(HttpMiddlewareX)
+            ]]
+        }],
+        [LookupRouter, [
+            routerMapping: {[
+                ["/templates", TemplateHandler]
+            ]}->asMap
+        ]]
+    ]
+};
+
+handle = ^HttpRequest => (Any|HttpResponse) @@ :: {
+    ctr = Container[getContainerConfig()];
+    sx = {ctr->instanceOf(CompositeHandler)}->as(HttpRequestHandlerX);
+    response = sx[#->as(HttpRequest)]
+};
+
+
+main = ^Array<String> => Any @@ :: {
+    ctr = Container[getContainerConfig()];
+    request = [
+        protocolVersion: HttpProtocolVersion.HTTP11,
+        headers: [:],
+        body: {["null"]}->jsonValueToString,
+        requestTarget: "/templates/10",
+        method: HttpRequestMethod.PATCH
+    ];
+    sx = {ctr->instanceOf(CompositeHandler)}->as(HttpRequestHandlerX);
+    response = sx[request];
+    [
+        a0: @{{159}->hydrateAs(Any)},
+        a1: response
+    ]
+};

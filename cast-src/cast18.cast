@@ -1,0 +1,28 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+
+fn = ^Integer => Integer :: {
+    x = 1;
+    y = 0;
+    ({x} <= {#}) ?* {
+        y = {y} + {x};
+        x = {x} + 1
+    };
+    y
+};
+
+fn2 = ^Integer => Integer :: {
+    x = 1;
+    y = 0;
+    ({x} <= {#}) ?+ {
+        y = {y} + {x};
+        x = {x} + 1
+    };
+    y
+};
+
+main = ^Array<String> => Any @@ :: {
+    [fn(20), fn2(20), fn(0), fn2(0)]
+};

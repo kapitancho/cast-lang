@@ -1,0 +1,86 @@
+-> Product;
+
+main = ^Array<String> => Any :: @@ {
+    i0 = 0;
+    i1 = 41;
+    i2 = -17;
+    i3 = 3;
+    [
+        integer0: i0,
+        integer1: i1,
+        integer2: i2,
+        integer3: i3,
+
+        upTo: i0->upTo(i3),
+        downTo: i3->downTo(i0),
+
+        binaryLessThan: {i1} < {i3},
+        binaryLessThanEqual: {i1} <= {i3},
+        binaryGreaterThan: {i1} > {i3},
+        binaryGreaterThanEquals: {i1} >= {i3},
+
+        unaryPlus: + {i1},
+        unaryMinus: - {i1},
+        binaryPlus: {i1} + {i3},
+        binaryMinus: {i1} - {i3},
+        binaryMultiplication: {i1} * {i3},
+        binaryModulo: {i1} % {i3},
+        binaryModuloDivisionByZero: @{{i1} % {i0}},
+        binaryDivision: {i1} / {i3},
+        binaryDivisionDivisionByZero: @{{i1} / {i0}},
+        binaryIntegerDivision: {i1} // {i3},
+        binaryIntegerDivisionDivisionByZero: @{{i1} // {i0}},
+        binaryPower: {i1} ** {i3},
+
+        unaryBitwiseNot: ~ {i1},
+        binaryBitwiseOr: {i1} | {i3},
+        binaryBitwiseAnd: {i1} & {i3},
+        binaryBitwiseXor: {i1} ^ {i3},
+
+        types: typeDemo[i0, i1, i2, i3]
+    ]
+};
+
+typeDemo = ^[
+    i0: Integer<-3..3>,
+    i1: Integer<0..50>,
+    i2: Integer,
+    i3: Integer<1..5>
+] => Type @ (DivisionByZero) :: {
+    i0 = #.i0;
+    i1 = #.i1;
+    i2 = #.i2;
+    i3 = #.i3;
+    {[
+        integer0: i0,
+        integer1: i1,
+        integer2: i2,
+        integer3: i3,
+
+        upTo: i0->upTo(i3),
+        downTo: i3->downTo(i0),
+
+        binaryLessThan: {i1} < {i3},
+        binaryLessThanEqual: {i1} <= {i3},
+        binaryGreaterThan: {i1} > {i3},
+        binaryGreaterThanEquals: {i1} >= {i3},
+
+        unaryPlus: + {i1},
+        unaryMinus: - {i1},
+        binaryPlus: {i1} + {i3},
+        binaryMinus: {i1} - {i3},
+        binaryMultiplication: {i1} * {i3},
+        binaryModulo: {i1} % {i3},
+        binaryModuloDivisionByZero: @{{i1} % {i0}},
+        binaryDivision: {i1} / {i3},
+        binaryDivisionDivisionByZero: @{{i1} / {i0}},
+        binaryIntegerDivision: {i1} // {i3},
+        binaryIntegerDivisionDivisionByZero: @{{i1} // {i0}},
+        binaryPower: {i1} ** {i3},
+
+        unaryBitwiseNot: ~ {i1},
+        binaryBitwiseOr: {i1} | {i3},
+        binaryBitwiseAnd: {i1} & {i3},
+        binaryBitwiseXor: {i1} ^ {i3}
+    ]}->compilationType
+};

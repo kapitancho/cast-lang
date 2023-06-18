@@ -1,0 +1,21 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "logs": {
+        "text": "dev/report/infection/infection.log",
+        "html": "dev/report/infection/infection.html",
+        "summary": "dev/report/infection/summary.log",
+        "json": "dev/report/infection/infection-log.json",
+        "perMutator": "dev/report/infection/per-mutator.md"
+    },
+    "source": {
+        "directories": [
+            "src/Module"
+        ]
+    },
+    "mutators": {
+        "@default": true,
+        "global-ignoreSourceCodeByRegex": [
+            ".*\\#\\[.*Data.*"
+        ]
+    }
+}

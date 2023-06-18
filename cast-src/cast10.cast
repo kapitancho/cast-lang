@@ -1,0 +1,12 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+callMe = ^[a: Integer, b: Real] => Real :: {{#a} + {#b}};
+
+main = ^Array<String> => Any @@ :: {
+    x = {#->item(0)}->asIntegerNumber;
+    y = {#->item(1)}->asRealNumber;
+    callMe([x, y])
+};
+

@@ -1,0 +1,63 @@
+-> Product;
+
+Timestamp = Integer<0..>;
+RevisionTime = [hour: Integer<0..23>, minute: Integer<0..59>];
+
+TitleProvider = [getTitle: ^Null => String];
+TimestampProvider = [getLastModification: ^Null => Timestamp];
+RevisionProvider = [getLastModification: ^Null => RevisionTime];
+
+Product <: [title: String, lastModification: Timestamp];
+PageText <: [pageTitle: String, lastRevisionTime: RevisionTime];
+ProductData = [title: String, modifiedAt: Timestamp];
+PageTextData = [title: String, revision: RevisionTime];
+
+Product ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.title
+];
+Product ==> TimestampProvider :: [
+    getLastModification: ^Null => Timestamp :: $.lastModification
+];
+
+PageText ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.pageTitle
+];
+PageText ==> RevisionProvider :: [
+    getLastModification: ^Null => RevisionTime :: $.lastRevisionTime
+];
+
+ProductData ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.title
+];
+ProductData ==> TimestampProvider :: [
+    getLastModification: ^Null => Timestamp :: $.modifiedAt
+];
+
+PageTextData ==> TitleProvider :: [
+    getTitle: ^Null => String :: $.title
+];
+PageTextData ==> RevisionProvider :: [
+    getLastModification: ^Null => RevisionTime :: $.revision
+];
+
+fn = ^(Integer|String) => String :: #->asText;
+
+determineTitle = ^(Product|PageText|ProductData|PageTextData) => String :: #->getTitle;
+determineLastModification = ^(Product|PageText|ProductData|PageTextData) => (Timestamp|RevisionTime) :: #->getLastModification;
+determineLastModificationWithCast = ^(Product|PageText) => String :: {
+    {#->as(TitleProvider)}.getTitle()
+};
+
+main = ^Array<String> => Any :: @@ {
+    obj1 = Product["My Product", 999999];
+    obj2 = PageText["My Page Title", [hour: 22, minute: 50]];
+    obj3 = [title: "My Product Title", modifiedAt: 777777];
+    obj4 = [title: "My New Page", revision: [hour: 23, minute: 37]];
+    [
+        fn(42),
+        fn("Hello world"),
+        [determineTitle(obj1), determineTitle(obj2), determineTitle(obj3), determineTitle(obj4)],
+        [determineLastModification(obj1), determineLastModification(obj2), determineLastModification(obj3), determineLastModification(obj4)],
+        [determineLastModificationWithCast(obj1), determineLastModificationWithCast(obj2)]
+    ]
+};

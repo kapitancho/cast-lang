@@ -1,0 +1,87 @@
+-> Product;
+//
+
+A = Any;
+
+ProductId = Integer<1..>;
+UnknownProductId = [~ProductId];
+Product <: [id: ProductId, name: String<1..>];
+
+ProductRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+mockProductRepository = ^Null => ProductRepository :: [
+    byId: ^ProductId => Product @@ UnknownProductId :: { Product[10, "Mock Product"] }
+];
+
+CategoryRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+XCategoryRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+mockCategoryRepository = ^Null => CategoryRepository :: [
+    byId: ^ProductId => Product @@ UnknownProductId :: { Product[10, "Mock Product"] }
+];
+
+TemplateRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+XTemplateRepository <: [a: Integer<1..>, b: String<1..>];
+XTemplateRepository ==> TemplateRepository :: {
+    [
+        byId: ^ProductId => Product @@ UnknownProductId :: Product[id: $.a, name: $.b]
+    ]
+};
+
+GroupRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+mockGroupRepository = ^[pr: ProductRepository] => GroupRepository :: {
+    pr = #.pr;
+    [
+        byId: ^ProductId => Product @@ UnknownProductId :: { pr.byId(#) }
+    ]
+};
+
+UserRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+XUserRepository <: [a: Integer<1..>, c: ProductRepository];
+XUserRepository ==> UserRepository :: {
+    [
+        byId: ^ProductId => Product @@ UnknownProductId :: Product[id: $.a, name: {$.c.byId(#)}.name]
+    ]
+};
+
+LabelRepository = [byId: ^ProductId => Product @@ UnknownProductId];
+XLabelRepository <: [a: Integer<1..>, c: ProductRepository];
+XLabelRepository ==> LabelRepository :: {
+    [
+        byId: ^ProductId => Product @@ UnknownProductId :: Product[id: $.a, name: {$.c.byId(#)}.name]
+    ]
+};
+
+t = ^Container => ProductRepository @ ContainerError :: {
+    #->instanceOf(ProductRepository)
+};
+
+main = ^Array<String> => Any @@ :: {
+    ctr = Container[[
+        [ProductRepository, mockProductRepository],
+        [CategoryRepository, XCategoryRepository],
+        [XCategoryRepository, mockCategoryRepository],
+        [TemplateRepository, XTemplateRepository],
+        [XTemplateRepository, [a: 5, b: "Hello"]],
+        [GroupRepository, mockGroupRepository],
+        [UserRepository, XUserRepository],
+        [XUserRepository, [a: 5]],
+        [XLabelRepository, [a: 5]]
+    ]];
+    repo1 = t(ctr);
+    repo2 = ctr->instanceOf(CategoryRepository);
+    repo3 = ctr->instanceOf(TemplateRepository);
+    repo4 = ctr->instanceOf(XTemplateRepository);
+    repo5 = ctr->instanceOf(GroupRepository);
+    repo6 = ctr->instanceOf(UserRepository);
+    repo7 = ctr->instanceOf(LabelRepository);
+    [
+        a0: @{{159}->hydrateAs(Any)},
+        a1: repo1.byId(10),
+        a2: repo2.byId(10),
+        a3: repo3.byId(10),
+        a4: repo4->byId(10),
+        a4a: [repo4.a, repo4.b],
+        a5: repo5.byId(10),
+        a6: repo6.byId(10),
+        a7: repo7.byId(10)
+    ]
+};

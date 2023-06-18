@@ -1,0 +1,21 @@
+parameters:
+	level: 9
+	paths:
+		- src/Module
+	checkMissingIterableValueType: false
+	treatPhpDocTypesAsCertain: false
+	checkGenericClassInNonGenericObjectType: false
+	ignoreErrors:
+		- '#\_\_invoke\(\) should return#'
+		- '#toSourceEntity#'
+		- '#.*?mixed given\.#'
+		- '#Access to an undefined property.*?#'
+		- '#Cannot access property.*?#'
+		- '#Cannot access offset.*?#'
+		- '#.*?but returns array\|object.*?#'
+		- '#.*?expects array, array\|object given.*?#'
+		- '#.*?int\|object\|string given.*?#'
+		- '#Cannot cast mixed.*?#'
+		-
+			message: '#.*?#'
+			path: src/Module/QuestionPlugin/Plugin

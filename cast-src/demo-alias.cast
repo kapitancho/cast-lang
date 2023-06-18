@@ -1,0 +1,21 @@
+-> Product;
+
+MyAliasType = (Integer|String);
+
+MyAliasType ==> String :: {
+    ($) ?<: {
+        | Integer: {"Number: "}->concat($->asText)
+        | String: {"String: "}->concat($)
+    }
+};
+
+fn = ^[x: MyAliasType] => String :: {
+    #.x->asText
+};
+
+main = ^Array<String> => Any :: @@ {
+    [
+        fn[5],
+        fn["Five"]
+    ]
+};

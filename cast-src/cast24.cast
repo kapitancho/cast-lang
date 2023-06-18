@@ -1,0 +1,56 @@
+-> Product;
+//
+
+Point <: [x: Real, y: Real];
+PositiveInteger = Integer<1..>;
+Point ==> String :: {
+    {""}->concatList["{", {$.x}->asText, ",", {$.y}->asText, "}"]
+};
+pi = 3.1415927;
+
+getStatusCode = ^[response: HttpResponse] => HttpStatusCode :: {
+    #response.statusCode
+};
+
+okResponse = ^[body: String] => HttpResponse :: [
+    statusCode: 200,
+    body: #body,
+    headers: [:],
+    protocolVersion: HttpProtocolVersion.HTTP11
+];
+
+modifyResponseBody = ^[response: HttpResponse] => HttpResponse @ NoCastAvailable :: {
+    {#response->withBody[body: "3.14"]}->as(HttpResponse)
+};
+
+zpz = ^Null => Map :: {
+    {[
+        ["Content-Type", "text/html"],
+        ["Content-Length", "2000"]
+    ]}->asMap
+};
+
+main = ^Array<PositiveInteger> => Any @@ :: {
+    p = {Point[pi, 42]}->asText;
+    myMessage = {[protocolVersion: HttpProtocolVersion.HTTP11, headers: [:], body: ""]}->as(HttpMessage);
+    myResponse = okResponse["true"];
+    myRequest = {[protocolVersion: HttpProtocolVersion.HTTP11, headers: {[
+        ["Content-Type", ["text/html"]],
+        ["Content-Length", ["2000"]]
+    ]}->asMap, body: "", method: HttpRequestMethod.GET,
+        requestTarget: "/"]}->as(HttpRequest);
+    [
+        p,
+        myMessage,
+        myMessage->with[body: "false"],
+        myMessage->withBody[body: "null"],
+        myMessage->with[another: 159],
+        myRequest,
+        myResponse,
+        myResponse->with[body: "false"],
+        myResponse->withBody[body: "42"],
+        modifyResponseBody[myResponse],
+        getStatusCode[okResponse["123"]],
+        zpz()
+    ]
+};

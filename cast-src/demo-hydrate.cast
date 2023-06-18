@@ -1,0 +1,52 @@
+-> Product;
+
+ShopName = String<1..80>;
+ShopType = :[Local, Online];
+
+InvalidShopStatus <: JsonValue;
+ShopStatus = :[Draft, Active, Disabled];
+
+GpsCoordinates <: [lat: Real<-90..90>, lon: Real<-180..180>];
+Tags <: Array<String<1..20>, ..10>;
+
+Shop <: [~ShopName, ~GpsCoordinates, ~ShopType, ~ShopStatus, ~Tags];
+
+ShopStatus ==> JsonValue :: {
+    ($) ?= {
+        | ShopStatus.Draft: 1
+        | ShopStatus.Active: 2
+        | ShopStatus.Disabled: 0
+    }
+};
+JsonValue ==> ShopStatus @ InvalidShopStatus :: {
+    ($) ?= {
+        | 1: ShopStatus.Draft
+        | 2: ShopStatus.Active
+        | 0: ShopStatus.Disabled
+        | ~: @ InvalidShopStatus($)
+    }
+};
+Tags ==> JsonValue :: {
+    $->combineAsText(", ")
+};
+JsonValue ==> Tags @ NoCastAvailable :: {
+    Tags({{$->as(String)}->split(", ")}->as(Array<String<1..20>, ..10>))
+};
+
+doSteps = ^Null => Any @ (InvalidJsonValue|HydrationFailed) :: {
+    jv1 = Shop["My shop", GpsCoordinates[31.34423, -109.234], ShopType.Local, ShopStatus.Active, Tags["jewelry", "rings"]];
+    [
+        step1Value: jv1,
+        step2JsonValue: jv2 = jv1->asJsonValue,
+        step3JsonString: jv3 = jv2->jsonValueToString,
+        step4JsonValue: jv4 = jv3->jsonStringToValue,
+        step5Value: jv5 = jv4->hydrateAs(Shop),
+
+        directAsJsonString: d2 = jv1->asJsonString,
+        directValue: d3 = d2->hydrateJsonAs(Shop)
+    ]
+};
+
+main = ^Array<String> => Any :: @@ {
+    doSteps()
+};

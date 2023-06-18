@@ -1,0 +1,61 @@
+-> HttpCore;
+//
+
+HttpProtocolVersion = :[HTTP1, HTTP11, HTTP2, HTTP3];
+InvalidHttpProtocolVersion <: String;
+
+String ==> HttpProtocolVersion @@ InvalidHttpProtocolVersion :: {
+    ($) ?= {
+        | "1.0": HttpProtocolVersion.HTTP1
+        | "1.1": HttpProtocolVersion.HTTP11
+        | "2.0": HttpProtocolVersion.HTTP2
+        | "3.0": HttpProtocolVersion.HTTP3
+        | ~: @InvalidHttpProtocolVersion($)
+    }
+};
+
+HttpHeadersList = Map<Array<String>>;
+HttpMessageBody = String;
+
+HttpStatusCode = (Integer<100..103>|Integer<200..208>|Integer<226..226>|Integer<300..304>|Integer<307..308>|Integer<400..418>|Integer<421..426>|Integer<428..429>|Integer<431..431>|Integer<451..451>|Integer<500..508>|Integer<510..511>);
+HttpHeaderName = String;
+HttpRequestTarget = String;
+HttpRequestMethod = :[CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE];
+
+HttpMessage = [
+    protocolVersion: HttpProtocolVersion,
+    headers: HttpHeadersList,
+    body: HttpMessageBody
+];
+
+HttpRequest = (HttpMessage & [
+    requestTarget: HttpRequestTarget,
+    method: HttpRequestMethod
+]);
+
+HttpResponse = (HttpMessage & [
+    statusCode: HttpStatusCode
+]);
+
+HttpRequestHandler = ^[request: HttpRequest] => HttpResponse @@;
+HttpMiddleware = ^[request: HttpRequest, handler: HttpRequestHandler] => HttpResponse @@;
+
+
+
+ResponseFactory = [
+    createResponse: ^HttpStatusCode => HttpResponse @@
+];
+
+HttpFactory <: [];
+HttpFactory ==> ResponseFactory :: {
+    [
+        createResponse: ^HttpStatusCode => HttpResponse :: {
+            [
+                statusCode: #,
+                protocolVersion: HttpProtocolVersion.HTTP11,
+                headers: [:],
+                body: ""
+            ]
+        }
+    ]
+};

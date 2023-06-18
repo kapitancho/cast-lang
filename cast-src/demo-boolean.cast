@@ -1,0 +1,48 @@
+-> Product;
+
+main = ^Array<String> => Any :: @@ {
+    b0 = false;
+    b1 = true;
+    b2 = false;
+    b3 = true;
+    [
+        boolean0: b0,
+        boolean1: b1,
+        boolean2: b2,
+        boolean3: b3,
+
+        unaryLogicNot: ! {b1},
+        unaryLogicNotCompiled: ! {b2},
+        binaryLogicOr: {b0} || {b1},
+        binaryLogicOrCompiled: {b2} || {b3},
+        binaryLogicAnd: {b0} && {b1},
+        binaryLogicAndCompiled: {b2} && {b3},
+
+        types: typeDemo[b0, b1, b2, b3]
+    ]
+};
+
+typeDemo = ^[
+    b0: Boolean,
+    b1: Boolean,
+    b2: False,
+    b3: True
+] => Type :: {
+    b0 = #.b0;
+    b1 = #.b1;
+    b2 = #.b2;
+    b3 = #.b3;
+    {[
+        boolean0: b0,
+        boolean1: b1,
+        boolean2: b2,
+        boolean3: b3,
+
+        unaryLogicNot: ! {b1},
+        unaryLogicNotCompiled: ! {b2},
+        binaryLogicOr: {b0} || {b1},
+        binaryLogicOrCompiled: {b2} || {b3},
+        binaryLogicAnd: {b0} && {b1},
+        binaryLogicAndCompiled: {b2} && {b3}
+    ]}->compilationType
+};

@@ -1,0 +1,116 @@
+-> Product;
+
+MyString <: String;
+MyEnum = :[Spades, Hearts, Diamonds, Clubs];
+
+main = ^Array<String> => Any :: @@ {
+    s1 = "Hello";
+    s2 = "abracadabra";
+    s3 = "   Space  ";
+    s4 = "42";
+    s5 = "3.14";
+    s6 = MyString("my string");
+    s7 = MyEnum.Spades;
+    [
+        string1: s1,
+        string2: s2,
+        string3: s3,
+        string4: s4,
+        string5: s5,
+        string6: s6,
+        string7: s7,
+
+        length: s1->length,
+        reverse: s1->reverse,
+        concat: s1->concat(s2),
+        contains: s1->contains("ll"),
+        split: s2->split("a"),
+        positionOf: s2->positionOf("ra"),
+        positionOfNotFound: @{s2->positionOf("x")},
+        lastPositionOf: s2->lastPositionOf("ra"),
+        lastPositionOfNotFound: @{s2->lastPositionOf("x")},
+        startsWith: s2->startsWith("ab"),
+        endsWith: s2->startsWith("ra"),
+        substringEnd: s1->substring[start: 1, end: 3],
+        substringLength: s1->substring[start: 2, length: 2],
+        toLowerCase: s1->toLowerCase,
+        toUpperCase: s1->toUpperCase,
+        trim: s3->trim,
+        trimLeft: s3->trimLeft,
+        trimRight: s3->trimRight,
+        padLeft: s1->padLeft[length: 11, padString: "-*"],
+        padRight: s1->padRight[length: 11, padString: "-*"],
+        chunk: s2->chunk(3),
+
+        asIntegerNumber: s4->asIntegerNumber,
+        asIntegerNumberInvalid: @{s5->asIntegerNumber},
+        asRealNumber: s5->asRealNumber,
+        asRealNumberParseInteger: s4->asRealNumber,
+        asRealNumberInvalid: @{s1->asRealNumber},
+
+        PRINT: s1->PRINT,
+
+        subtypeReverse: s6->reverse,
+        enumReverse: s7->reverse,
+
+        types: typeDemo[s1, s2, s3, s4, s5, s6, s7]
+    ]
+};
+
+typeDemo = ^[
+    s1: String<3..10>,
+    s2: String<3..50>,
+    s3: String<3..30>,
+    s4: String<1..10>,
+    s5: String<1..10>,
+    s6: MyString,
+    s7: MyEnum
+] => Type @ (SubstringNotInString|StringIsNoIntegerNumber|StringIsNoRealNumber) :: {
+    s1 = #.s1;
+    s2 = #.s2;
+    s3 = #.s3;
+    s4 = #.s4;
+    s5 = #.s5;
+    s6 = #.s6;
+    s7 = #.s7;
+    {[
+        string1: s1,
+        string2: s2,
+        string3: s3,
+        string4: s4,
+        string5: s5,
+        string6: s6,
+        string7: s7,
+
+        length: s1->length,
+        reverse: s1->reverse,
+        concat: s1->concat(s2),
+        contains: s1->contains("ll"),
+        split: s2->split("a"),
+        positionOf: s2->positionOf("ra"),
+        positionOfNotFound: @{s2->positionOf("x")},
+        lastPositionOf: s2->lastPositionOf("ra"),
+        lastPositionOfNotFound: @{s2->lastPositionOf("x")},
+        startsWith: s2->startsWith("ab"),
+        endsWith: s2->startsWith("ra"),
+        substringEnd: s1->substring[start: 1, end: 3],
+        substringLength: s1->substring[start: 2, length: 2],
+        toLowerCase: s1->toLowerCase,
+        toUpperCase: s1->toUpperCase,
+        trim: s3->trim,
+        trimLeft: s3->trimLeft,
+        trimRight: s3->trimRight,
+        padLeft: s1->padLeft[length: 11, padString: "-*"],
+        padRight: s1->padRight[length: 11, padString: "-*"],
+        chunk: s2->chunk(3),
+
+        asIntegerNumber: s4->asIntegerNumber,
+        asIntegerNumberInvalid: @{s5->asIntegerNumber},
+        asRealNumber: s5->asRealNumber,
+        asRealNumberParseInteger: s4->asRealNumber,
+        asRealNumberInvalid: @{s1->asRealNumber},
+
+        subtypeReverse: s6->reverse,
+        enumReverse: s7->reverse
+    ]}->compilationType
+};

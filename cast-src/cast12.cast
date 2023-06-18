@@ -1,0 +1,30 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+Point <: [x: Real, y: Real];
+ProductId <: Integer<1..>;
+
+fn1 = ^JsonValue => String :: {
+    #->jsonValueToString
+};
+
+fn2 = ^String => JsonValue @ InvalidJsonValue :: {
+    #->jsonStringToValue
+};
+
+main = ^Array<String> => Any @@ :: [
+    {42}->jsonValueToString,
+    {3.14}->jsonValueToString,
+    {"text"}->jsonValueToString,
+    {true}->jsonValueToString,
+    {false}->jsonValueToString,
+    {null}->jsonValueToString,
+    {[42, "text", Point([3.14, 42])]}->jsonValueToString,
+    {[a: 42, b: 3.14, productId: ProductId(35)]}->jsonValueToString,
+    fn1([42]),
+    fn2("[1, false, null]"),
+    @{fn2("Invalid json here")},
+    fn2({[a: 42, b: 3.14, productId: ProductId(35)]}->jsonValueToString)
+];
+

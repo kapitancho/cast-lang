@@ -1,0 +1,53 @@
+-> Product;
+
+MyPoint <: [x: Real];
+MyReal <: Real;
+
+Integer ==> MyPoint :: MyPoint[$];
+MyPoint ==> String :: {{$.x}->asText};
+MyPoint ==> Boolean :: false;
+MyPoint ==> MyReal :: MyReal($.x);
+
+main = ^Array<String> => Any :: @@ {
+    str = "Hello world";
+    int = 42;
+    real = 3.14;
+    bool = false;
+    n = null;
+    zero = 0;
+    type = Type<String<1..20>>;
+    myPoint = int->as(MyPoint);
+    [
+        string: str,
+        integer: int,
+        real: real,
+        boolean: bool,
+        null: n,
+        type: type,
+        customType: myPoint,
+        stringAsText: str->asText,
+        integerAsText: int->asText,
+        realAsText: real->asText,
+        booleanAsText: bool->asText,
+        nullAsText: n->asText,
+        typeAsText: type->asText,
+        customTypeAsText: myPoint->asText,
+        stringAsBoolean: str->asBoolean,
+        integerAsBoolean: int->asBoolean,
+        zeroAsBoolean: zero->asBoolean,
+        realAsBoolean: real->asBoolean,
+        booleanAsBoolean: bool->asBoolean,
+        nullAsBoolean: n->asBoolean,
+        typeAsBoolean: type->asBoolean,
+        customTypeAsBoolean: myPoint->asBoolean,
+        typeOfString: str->type,
+        typeOfInteger: int->type,
+        typeOfReal: real->type,
+        debug: real->DEBUG,
+        subtype1: {3.14} <: {Real},
+        subtype2: {3.14} <: {Real<5..10>},
+        subtype3: {3.14} <: {Integer},
+        as1: int->as(MyPoint),
+        as2: myPoint->as(MyReal)
+    ]
+};

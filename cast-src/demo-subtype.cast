@@ -1,0 +1,81 @@
+-> Product;
+
+MySubtype <: (Integer|String);
+
+MySubtype ==> String :: {
+    v = $->baseValue;
+    (v) ?<: {
+        | Integer: {"Number: "}->concat(v->asText)
+        | String: {"String: "}->concat(v)
+    }
+};
+
+MySubtype ==> Invokable :: ^Integer => Integer :: {
+    v = $->baseValue;
+    (v) ?<: {
+        | Integer: {v} + {#}
+        | String: #
+    }
+};
+
+fn = ^[x: MySubtype] => String :: {
+    #.x->asText
+};
+
+InvalidRange <: [from: Integer, to: Integer];
+Range <: [from: Integer, to: Integer] @ InvalidRange :: {
+     ({#.from} > {#.to}) ? @ InvalidRange(#)
+};
+
+main = ^Array<String> => Any :: @@ {
+    val1 = MySubtype(5);
+    val2 = MySubtype("Five");
+    val3 = Range[3, 5];
+    val4 = @{Range[10, 7]};
+    [
+        v1: val1,
+        v2: val2,
+        v3: val3,
+        v4: val4,
+
+        fn1: fn[val1],
+        fn2: fn[val2],
+        invoke1: val1(3),
+        invoke2: val2(3),
+        with: val3->with[to: 8],
+        withInvalid: @{val3->with[from: 8]},
+
+        hydrated: {[from: 5, to: 8]}->hydrateAs(Range),
+        hydratedInvalid: @{{[from: 8, to: 5]}->hydrateAs(Range)},
+
+        types: typeDemo[val1, val2, val3, val4]
+    ]
+};
+
+typeDemo = ^[
+    val1: MySubtype,
+    val2: MySubtype,
+    val3: Range,
+    val4: (Range|InvalidRange)
+] => Type @ (InvalidRange|HydrationFailed) :: {
+    val1 = #.val1;
+    val2 = #.val2;
+    val3 = #.val3;
+    val4 = #.val4;
+    {[
+        v1: val1,
+        v2: val2,
+        v3: val3,
+        v4: val4,
+
+        fn1: fn[val1],
+        fn2: fn[val2],
+        invoke1: val1(3),
+        invoke2: val2(3),
+        with: val3->with[to: 8],
+        withInvalid: @{val3->with[from: 8]},
+
+        hydrated: {[from: 5, to: 8]}->hydrateAs(Range),
+        hydratedInvalid: @{{[from: 8, to: 5]}->hydrateAs(Range)}
+    ]}->compilationType
+};

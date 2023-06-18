@@ -1,0 +1,44 @@
+-> Product;
+
+ShopName = String<1..80>;
+ShopType = :[Local, Online];
+
+InvalidShopStatus <: JsonValue;
+ShopStatus = :[Draft, Active, Disabled];
+
+GpsCoordinates <: [lat: Real<-90..90>, lon: Real<-180..180>];
+
+Shop <: [~ShopName, ~GpsCoordinates, ~ShopType, ~ShopStatus];
+ShopStatus ==> JsonValue :: {
+    ($) ?= {
+        | ShopStatus.Draft: 1
+        | ShopStatus.Active: 2
+        | ShopStatus.Disabled: 0
+    }
+};
+JsonValue ==> ShopStatus @ InvalidShopStatus :: {
+    ($) ?= {
+        | 1: ShopStatus.Draft
+        | 2: ShopStatus.Active
+        | 0: ShopStatus.Disabled
+        | ~: @ InvalidShopStatus($)
+    }
+};
+
+main = ^Array<String> => Any :: @@ {
+    js1 = "[1, true, [null, false, 3.14]]";
+    jv2 = [1, true, [a: null, b: false, c: 3.14, d: "Hello"]];
+    jv3 = Shop["My shop", GpsCoordinates[31.34423, -109.234], ShopType.Local, ShopStatus.Active];
+    [
+        jsonString1: js1,
+        jsonString2: jv2->jsonValueToString,
+        jsonString3: {jv3->asJsonValue}->jsonValueToString,
+        jsonValue1: js1->jsonStringToValue,
+        jsonValue2: jv2,
+        jsonValue2Rebuild: {jv2->jsonValueToString}->jsonStringToValue,
+        jsonValue3: jv3,
+        jsonValue3Json: jv3->asJsonValue,
+        jsonValue3Rebuild: {{jv3->asJsonValue}->jsonValueToString}->jsonStringToValue,
+        jsonValue3Hydrated: {{{jv3->asJsonValue}->jsonValueToString}->jsonStringToValue}->hydrateAs(Shop)
+    ]
+};

@@ -1,0 +1,123 @@
+@font-face {
+	font-family: "JetBrains";
+	src: url("fonts/JetBrainsMono-Regular.ttf");
+}
+@font-face {
+	font-family: "JetBrains";
+	font-weight: bold;
+	src: url("fonts/JetBrainsMono-Bold.ttf");
+}
+
+body {
+	font-family: JetBrains, serif;
+	font-size: 14px;
+	line-height: 1.4em;
+}
+header {
+	border-bottom: solid 2px black;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+header a {
+	color: blue;
+}
+.module-comment,
+.module-expression {
+	margin: 4px;
+	padding: 4px;
+	border-bottom: dashed 1px #ccc;
+}
+.module-comment {
+	color: #AAA;
+}
+.constant-assignment-term {
+}
+.variable-name {
+	color: brown;
+}
+.multiline-term > .sequence-term-item {
+	margin-left: 30px;
+}
+.sequence-term-item {
+	display: inline-flex;
+}
+.sequence-term-item:last-of-type > .sequence-separator {
+	display: none;
+}
+.default-match-sign {
+	color: green;
+	font-weight: bold;
+}
+.constant-assignment-term > .variable-name {
+	font-weight: bold;
+}
+.multiline-term > * {
+	margin-left: 30px;
+}
+.record-key-same-value .type-name {
+	color: sandybrown;
+}
+.type-range {
+	font-style: normal;
+	color: #333;
+}
+.type-range-min {
+	color: #888;
+}
+.type-range-max {
+	color: #888;
+}
+.type-constant {
+	color: #aa44ee;
+}
+.type-name {
+	color: #aa44ee;
+	font-style: italic;
+}
+.type-definition-name {
+	color: #aa44ee;
+	font-weight: bold;
+}
+.enumeration-type-value {
+	color: #333;
+}
+.enumeration-value {
+	color: #91133b;
+	font-style: italic;
+}
+.throw-op, .error-type, .error-return-type, .error-return-type .type-name {
+	color: #f5092b;
+}
+.error-type-op-specific {
+
+}
+.error-type-op-any {
+	font-weight: bold;
+}
+.error-return-type {
+	font-style: italic;
+}
+.record-key {
+	color: #788682;
+}
+.literal-constant-realliteral {
+	color: blue;
+}
+.literal-constant-integerliteral {
+	font-weight: bold;
+	color: blue;
+}
+.literal-constant-stringliteral {
+	color: orange;
+}
+.literal-constant-booleanliteral {
+	color: green;
+	font-weight: bold;
+}
+.literal-constant-nullliteral {
+	color: green;
+}
+
+.mutable-value {
+	background: yellow;
+}

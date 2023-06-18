@@ -1,0 +1,16 @@
+-> Product;
+//
+
+InvalidProductId <: Null;
+ProductId <: Integer<1..>;
+
+Integer ==> ProductId @@ InvalidProductId :: {
+    ($) ?<: {
+        | Integer<1..> : ProductId($)
+        | ~ : @ InvalidProductId()
+    }
+};
+
+main = ^Array<String> => Any @@ :: {
+    {12}->as(ProductId)
+};

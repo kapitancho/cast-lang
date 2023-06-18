@@ -1,0 +1,565 @@
+-> Product;
+//
+PositiveInteger = Integer<1..>;
+
+length = ^String<3..50> => Integer<3..50> :: #->length;
+reverse = ^String<3..10> => String<3..10> :: #->reverse;
+trim = ^String<3..10> => String<..10> :: #->trim;
+trimLeft = ^String<3..10> => String<..10> :: #->trimLeft;
+trimRight = ^String<3..10> => String<..10> :: #->trimRight;
+padLeft = ^[String<4..12>, [length: Integer<1..15>, padString: String<1..3>]]
+    => String<4..15> :: #.0->padLeft([length: #.1.length, padString: #.1.padString]);
+padRight = ^[String<4..12>, [length: Integer<1..15>, padString: String<1..3>]]
+    => String<4..15> :: #.0->padRight([length: #.1.length, padString: #.1.padString]);
+
+substringTo = ^[String<4..12>, [start: Integer<1..15>, end: Integer<1..17>]]
+    => String<4..12> :: #.0->substring([start: #.1.start, end: #.1.end]);
+substringLength = ^[String<4..12>, [start: Integer<1..15>, length: Integer<2..3>]]
+    => String<3..3> :: #.0->substring([start: #.1.start, length: #.1.length]);
+
+concat = ^[String<2..5>, String<3..10>] => String<5..15> :: #.0->concat(#.1);
+contains = ^[String<2..5>, String<3..10>] => Boolean :: #.0->contains(#.1);
+startsWith = ^[String<2..150>, String<2..10>] => Boolean :: #.0->startsWith(#.1);
+endsWith = ^[String<2..5>, String<2..10>] => Boolean :: #.0->endsWith(#.1);
+split = ^[String<1..12>, String<1..3>] => Array<String> :: #.0->split(#.1);
+chunk = ^[String<1..12>, Integer<2..4>] => Array<String<2..4>> :: #.0->chunk(#.1);
+positionOf = ^[String<2..10>, String<1..4>] => Integer<0..9> @ SubstringNotInString :: #.0->positionOf(#.1);
+lastPositionOf = ^[String<2..10>, String<1..4>] => Integer<0..9> @ SubstringNotInString :: #.0->lastPositionOf(#.1);
+toLowerCase = ^String<3..10> => String<3..10> :: #->toLowerCase;
+toUpperCase = ^String<3..10> => String<3..10> :: #->toUpperCase;
+
+arrLength = ^Array<2..5> => Integer<2..5> :: #->length;
+tupleLength = ^[Integer, String, Real] => Integer<3..3> :: #->length;
+
+mapKeys = ^Map<2..6> => Array<String, 2..6> :: #->keys;
+mapValues = ^Map<Integer, 2..6> => Array<Integer, 2..6> :: #->values;
+
+sumIntegers = ^[Integer<-9..50>, Integer<4..33>] => Integer<-5..83> :: {
+    {#.0} + {#.1}
+};
+
+sumIntegerAndReal = ^[Integer<-9..50>, Real<4..33.9>] => Real<-5..83.9> :: {
+    {#.0} + {#.1}
+};
+
+sumReals = ^[Real<-9..50.4>, Real<4..33.9>] => Real<-5..84.3> :: {
+    {#.0} + {#.1}
+};
+
+minusIntegers = ^[Integer<20..50>, Integer<4..33>] => Integer<-13..46> :: {
+    {#.0} - {#.1}
+};
+
+minusIntegerAndReal = ^[Integer<-9..50>, Real<4..33.9>] => Real<-42.9..46> :: {
+    {#.0} - {#.1}
+};
+
+minusReals = ^[Real<-9..50.4>, Real<4..33.9>] => Real<-42.9..46.4> :: {
+    {#.0} - {#.1}
+};
+
+multiplyIntegers = ^[Integer<20..50>, Integer<4..33>] => Integer :: {
+    {#.0} * {#.1}
+};
+
+multiplyIntegerAndReal = ^[Integer<-9..50>, Real<4..33.9>] => Real :: {
+    {#.0} * {#.1}
+};
+
+multiplyReals = ^[Real<-9..50.4>, Real<4..33.9>] => Real :: {
+    {#.0} * {#.1}
+};
+
+powerIntegers = ^[Integer<2..50>, Integer<4..33>] => Integer :: {
+    {#.0} ** {#.1}
+};
+
+powerIntegerAndReal = ^[Integer<-9..50>, Real<4..33.9>] => Real :: {
+    {#.0} ** {#.1}
+};
+
+powerReals = ^[Real<-2..50.4>, Real<1..33.9>] => Real :: {
+    {#.0} ** {#.1}
+};
+
+integerDivideIntegers = ^[Integer<-9..50>, Integer<-1..33>] => Integer @ DivisionByZero :: {
+    {#.0} // {#.1}
+};
+
+divideIntegers = ^[Integer<-9..50>, Integer<-1..33>] => Real @ DivisionByZero :: {
+    {#.0} / {#.1}
+};
+
+divideIntegerAndReal = ^[Integer<-9..50>, Real<-1..33.9>] => Real @ DivisionByZero :: {
+    {#.0} / {#.1}
+};
+
+divideReals = ^[Real<-9..50.4>, Real<-1..33.9>] => Real @ DivisionByZero :: {
+    {#.0} / {#.1}
+};
+
+moduloIntegers = ^[Integer<-9..50>, Integer<-1..33>] => Integer @ DivisionByZero :: {
+    {#.0} % {#.1}
+};
+
+moduloIntegerAndReal = ^[Integer<-9..50>, Real<-1..33.9>] => Real @ DivisionByZero :: {
+    {#.0} % {#.1}
+};
+
+moduloReals = ^[Real<-9..50.4>, Real<-1..33.9>] => Real @ DivisionByZero :: {
+    {#.0} % {#.1}
+};
+
+unaryMinusInteger = ^Integer<-3..10> => Integer<-10..3> :: {
+    - {#}
+};
+
+unaryPlusInteger = ^Integer<-3..10> => Integer<-3..10> :: {
+    + {#}
+};
+
+unaryMinusReal = ^Real<-3.14..10> => Real<-10..3.14> :: {
+    - {#}
+};
+
+unaryPlusReal = ^Real<-3.14..10> => Real<-3.14..10> :: {
+    + {#}
+};
+
+realAsInteger = ^Real<-13.14..13.14> => Integer<-13..13> :: {
+    #->asInteger
+};
+
+roundReal = ^Real<-13.64..13.64> => Integer<-14..14> :: {
+    #->roundAsInteger
+};
+
+floorReal = ^Real<-13.64..13.64> => Integer<-14..13> :: {
+    #->floor
+};
+
+ceilReal = ^Real<-13.64..13.64> => Integer<-13..14> :: {
+    #->ceil
+};
+
+roundDecimal = ^[Real<-13.64..13.64>, Integer<0..10>] => Real<-14..14> :: {
+    #.0->roundAsDecimal(#.1)
+};
+
+
+arrayItem = ^[Array<(Real|String), 2..6>, Integer<1..10>] => (Real|String) @ ArrayItemNotFound :: {
+    #.0->item(#.1)
+};
+
+arrayItemInRange = ^[Array<(Real|String), 9..16>, Integer<1..7>] => (Real|String) :: {
+    #.0->item(#.1)
+};
+
+arrayContains = ^[Array<(Real|String), 2..6>, (Real|String)] => Boolean :: {
+    #.0->contains(#.1)
+};
+
+arrayIndexOf = ^[Array<(Real|String), 2..6>, (Real|String)] => Integer<0..5> @ ArrayItemNotFound :: {
+    #.0->indexOf(#.1)
+};
+
+arrayFlip = ^Array<String, 1..5> => Map<Integer<0..4>, 1..5> :: {
+    #->flip
+};
+
+arrayMap = ^[Array<String, ..5>, ^String => Integer] => Array<Integer, ..5> :: {
+    #.0->map(#.1)
+};
+
+arrayFilter = ^[Array<String, 2..5>, ^String => Boolean] => Array<String, ..5> :: {
+    #.0->filter(#.1)
+};
+
+arrayFindFirst = ^[Array<String, 2..5>, ^String => Boolean] => String @ ArrayItemNotFound :: {
+    #.0->findFirst(#.1)
+};
+
+arraySum = ^Array<Integer> => Integer :: {
+    #->sum
+};
+
+arraySumReal = ^Array<Real> => Real :: {
+    #->sum
+};
+
+arrayMin = ^Array<Integer, 1..> => Integer :: {
+    #->min
+};
+
+arrayMinReal = ^Array<Real, 1..> => Real :: {
+    #->min
+};
+
+arrayMax = ^Array<Integer, 2..> => Integer :: {
+    #->max
+};
+
+arrayMaxReal = ^Array<Real, 2..> => Real :: {
+    #->max
+};
+
+arrayWithout = ^[Array<(Real|String), 2..6>, (Real|String)] => Array<(Real|String), 2..5> @ ArrayItemNotFound :: {
+    #.0->without(#.1)
+};
+
+arrayWithoutByIndex = ^[Array<(Real|String), 2..6>, Integer] => Array<(Real|String), 2..5> @ ArrayItemNotFound :: {
+    #.0->withoutByIndex(#.1)
+};
+
+arrayWithoutByIndexInRange = ^[Array<(Real|String), 2..6>, Integer<1..2>] => Array<(Real|String), 2..5> :: {
+    #.0->withoutByIndex(#.1)
+};
+
+arrayPad = ^[Array<(Real|String), 4..6>, [length: Integer<2..10>, value: (Boolean|String)]] => Array<(Real|String|Boolean), 4..10> :: {
+    #.0->pad([length: #.1.length, value: #.1.value])
+};
+
+arrayInsertFirst = ^[Array<(Real|String), 2..6>, (Boolean|String)] => Array<(Real|String|Boolean), 3..7> :: {
+    #.0->insertFirst(#.1)
+};
+
+arrayInsertLast = ^[Array<(Real|String), 2..6>, (Boolean|String)] => Array<(Real|String|Boolean), 3..7> :: {
+    #.0->insertLast(#.1)
+};
+
+arrayWithoutFirst = ^Array<(Real|String), ..6> => [array: Array<(Real|String), ..5>, element: (Real|String)] @ ArrayItemNotFound :: {
+    #->withoutFirst
+};
+
+arrayWithoutLast = ^Array<(Real|String), ..6> => [array: Array<(Real|String), ..5>, element: (Real|String)] @ ArrayItemNotFound :: {
+    #->withoutLast
+};
+
+arrayWithoutLastInRange = ^Array<(Real|String), 2..6> => [array: Array<(Real|String), ..5>, element: (Real|String)] :: {
+    #->withoutLast
+};
+
+arrayAppendWith = ^[Array<(Real|String), 2..6>, Array<(Boolean|String), 1..3>] => Array<(Real|String|Boolean), 3..9> :: {
+    #.0->appendWith(#.1)
+};
+
+mapItem = ^[Map<(Real|String), 2..6>, String<1..10>] => (Real|String) @ MapItemNotFound :: {
+    #.0->item(#.1)
+};
+
+mapKeyExists = ^[Map<(Real|String), 2..6>, String<1..10>] => Boolean :: {
+    #.0->keyExists(#.1)
+};
+
+mapContains = ^[Map<(Real|String), 2..6>, (Real|String)] => Boolean :: {
+    #.0->contains(#.1)
+};
+
+mapKeyOf = ^[Map<(Real|String), 2..6>, (Real|String)] => String @ MapItemNotFound :: {
+    #.0->keyOf(#.1)
+};
+
+typeOf = ^Boolean => Type :: {
+    #->type
+};
+
+mapWith = ^[Map<(Real|String), 2..6>, [key: String, value: Boolean]] => Map<(Real|String|Boolean), 2..7> :: {
+    #.0->withKeyValue(#.1)
+};
+
+mapWithout = ^[Map<(Real|String), 2..6>, (Real|String)] => Map<(Real|String), 2..5> @ MapItemNotFound :: {
+    #.0->without(#.1)
+};
+
+mapWithoutByKey = ^[Map<(Real|String), 2..6>, String] => Map<(Real|String), 2..5> @ MapItemNotFound :: {
+    #.0->withoutByKey(#.1)
+};
+
+lengthFull = ^String => Integer :: #->length;
+mapMap = ^[Map<String, ..5>, ^String => Integer] => Map<Integer, ..5> :: {
+    #.0->map(#.1)
+};
+
+mapFlipper = ^[key: String, value: String] => [key: String, value: Integer] :: {
+    [key: {{#.value}->concat("/")}->concat(#.key), value: #.value->length]
+};
+
+mapMapKeyValue = ^[Map<String>, ^[key: String, value: String] => [key: String, value: Integer]] => Map<Integer> :: {
+    #.0->mapKeyValue(#.1)
+};
+
+mapFilterKeyValue = ^[Map<String>, ^[key: String, value: String] => Boolean] => Map<String> :: {
+    #.0->filterKeyValue(#.1)
+};
+
+mapFilter = ^[Map<String>, ^String => Boolean] => Map<String> :: {
+    #.0->filter(#.1)
+};
+
+mapFindFirst = ^[Map<String>, ^String => Boolean] => String @ MapItemNotFound :: {
+    #.0->findFirst(#.1)
+};
+
+mapFindFirstKeyValue = ^[Map<String>, ^[key: String, value: String] => Boolean] => [key: String, value: String] @ MapItemNotFound :: {
+    #.0->findFirstKeyValue(#.1)
+};
+
+mapFlip = ^Map<String> => Map<String> :: {
+    #->flip
+};
+
+mapMergeWith = ^[Map<(Real|String), 2..6>, Map<(Boolean|String), 1..3>] => Map<(Real|String|Boolean), 2..9> :: {
+    #.0->mergeWith(#.1)
+};
+
+uniqueAsInteger = ^Array<Integer<-10..100>, 2..20> => Array<Integer<-10..100>, 1..20> :: {
+    #->unique
+};
+
+uniqueAsReal = ^Array<Real<-10..100>, 2..20> => Array<Real<-10..100>, 1..20> :: {
+    #->unique
+};
+
+uniqueAsString = ^Array<String<..100>, 2..20> => Array<String<..100>, 1..20> :: {
+    #->unique
+};
+
+sortAsInteger = ^Array<Integer<-10..100>, 2..20> => Array<Integer<-10..100>, 2..20> :: {
+    #->sort
+};
+
+sortAsReal = ^Array<Real<-10..100>, 2..20> => Array<Real<-10..100>, 2..20> :: {
+    #->sort
+};
+
+sortAsString = ^Array<String<..100>, 2..20> => Array<String<..100>, 2..20> :: {
+    #->sort
+};
+
+arrayCountValues = ^Array<String, 3..11> => Map<Integer<1..11>, 3..11> :: {
+    #->countValues
+};
+
+lessThan = ^[Real, Real] => Boolean :: {
+    {#.0} < {#.1}
+};
+
+lessThanEqual = ^[Real, Real] => Boolean :: {
+    {#.0} <= {#.1}
+};
+
+greaterThan = ^[Real, Real] => Boolean :: {
+    {#.0} > {#.1}
+};
+
+greaterThanEqual = ^[Real, Real] => Boolean :: {
+    {#.0} >= {#.1}
+};
+
+bitwiseAnd = ^[Integer, Integer] => Integer :: {
+    {#.0} & {#.1}
+};
+
+bitwiseOr = ^[Integer, Integer] => Integer :: {
+    {#.0} | {#.1}
+};
+
+bitwiseXor = ^[Integer, Integer] => Integer :: {
+    {#.0} ^ {#.1}
+};
+
+bitwiseNot = ^Integer => Integer :: {
+    ~ {#}
+};
+
+logicAnd = ^[Boolean, Boolean] => Boolean :: {
+    {#.0} && {#.1}
+};
+
+logicOr = ^[Boolean, Boolean] => Boolean :: {
+    {#.0} || {#.1}
+};
+
+logicNot = ^Boolean => Boolean :: {
+    ! {#}
+};
+
+WrapString <: String;
+
+main = ^Array<String> => Any :: {
+    ws = WrapString("This is a very long sentence which contains abc");
+    [
+        a: 1,
+        b: length("Hello"),
+        c: reverse("Hello"),
+        d: trim("   Space  "),
+        e: concat(["abc", "def"]),
+        f: contains(["abcd", "abc"]),
+        g: split(["abracadabra", "a"]),
+        h: @{positionOf(["abcde", "bc"])},
+        i: @{positionOf(["abcde", "cb"])},
+        j: arrLength([1, 2, 3]),
+        k: tupleLength([1, "2", 3]),
+        l: mapKeys([a: 1, b: 2, c: 3]),
+        m: mapValues([a: 1, b: 2, c: 3]),
+        n: sumIntegers([21, 22]),
+        o: sumIntegerAndReal([21, 7.5]),
+        p: sumReals([5, 9.99]),
+        q: @{arrayItem([[1, "hi", 3.14], 1])},
+        r: @{arrayItem([[1, "hi", 3.14], 3])},
+        s: @{mapItem([[a: 1, b: "hi", c: 3.14], "b"])},
+        t: mapKeyExists([[a: 1, b: "hi", c: 3.14], "b"]),
+        u: mapContains([[a: 1, b: "hi", c: 3.14], "hi"]),
+        v: @{mapKeyOf([[a: 1, b: "hi", c: 3.14], "hi"])},
+        w: @{mapKeyOf([[a: 1, b: "hi", c: 3.14], "hi!"])},
+        x: @{mapItem([[a: 1, b: "hi", c: 3.14], "d"])},
+        y: typeOf(false),
+        z: False,
+        aa: {false}->type,
+        ab: {3.14}->type,
+        ac: {{3.14}->type}->type,
+        ad: mapWith([[a: 1, b: "hi", c: 3.14], [key: "d", value: true]]),
+        ae: @{mapWithoutByKey([[a: 1, b: "hi", c: 3.14], "b"])},
+        af: @{mapWithoutByKey([[a: 1, b: "hi", c: 3.14], "d"])},
+        ag: @{mapWithout([[a: 1, b: "hi", c: 3.14], 3.14])},
+        ah: @{mapWithout([[a: 1, b: "hi", c: 3.14], 7.29])},
+        ai: mapMap([[a: "Hello", b: "my", c: "Friend"], lengthFull]),
+        aj: mapMapKeyValue([[a: "Hello", b: "my", c: "Friend"], mapFlipper]),
+        ak: mapFlip([a: "Hello", b: "my", c: "Friend"]),
+        al: mapMergeWith([[a: 1, b: "hi", c: 3.14], [c: "Hello", d: false]]),
+        am: arrayContains([[1, "hi", 3.14], "hi"]),
+        an: arrayContains([[1, "hi", 3.14], "world"]),
+        ao: @{arrayIndexOf([[1, "hi", 3.14], "hi"])},
+        ap: @{arrayIndexOf([[1, "hi", 3.14], "hi!"])},
+        aq: arrayFlip(["Hello", "my", "Friend"]),
+        ar: arrayMap([["Hello", "my", "Friend"], lengthFull]),
+        as: arraySum([1, 3, 5]),
+        at: arraySumReal([1, 3.14, 5.29]),
+        au: arrayMin([1, 3, 5]),
+        av: arrayMinReal([1, 3.14, 5.29]),
+        aw: arrayMax([1, 3, 5]),
+        ax: arrayMaxReal([1, 3.14, 5.29]),
+        ay: @{arrayWithoutByIndex([[1, "hi", 3.14], 2])},
+        az: @{arrayWithoutByIndex([[1, "hi", 3.14], 4])},
+        ba: @{arrayWithout([[1, "hi", 3.14], 3.14])},
+        bb: @{arrayWithout([[1, "hi", 3.14], 7.29])},
+        bc: arrayWithoutByIndexInRange([[1, "hi", 3.14], 1]),
+        bd: uniqueAsInteger([3, 1, 5, 9, 5, 15, 1, 20]),
+        be: uniqueAsReal([3.14, 1, 5, 9.99, 5, 15.2, 1, 20]),
+        bf: uniqueAsString(["Hello", "Hi", "What", "125", "50", "Hi", "125", "99", ""]),
+        bd: sortAsInteger([3, 1, 5, 9, 5, 15, 1, 20]),
+        be: sortAsReal([3.14, 1, 5, 9.99, 5, 15.2, 1, 20]),
+        bf: sortAsString(["Hello", "Hi", "What", "125", "50", "Hi", "125", "99", ""]),
+        bg: arrayAppendWith([[1, "hi", 3.14], ["Hello", false]]),
+        bh: arrayInsertLast([[1, "hi", 3.14], true]),
+        bi: arrayInsertFirst([[1, "hi", 3.14], true]),
+        bj: arrayCountValues(["Hello", "Hi", "What", "x125", "x50", "Hi", "x125", "x99", ""]),
+        bk: @{arrayWithoutFirst([1, "hi", 3.14])},
+        bl: @{arrayWithoutFirst([])},
+        bm: @{arrayWithoutLast([1, "hi", 3.14])},
+        bn: arrayWithoutLastInRange([1, "hi", 3.14]),
+        bo: arrayPad([[1, "hi", 3.14, -42], [length: 8, value: false]]),
+        bp: startsWith(["abcd", "abc"]),
+        bq: endsWith(["abcd", "cd"]),
+        br: @{lastPositionOf(["abcde", "bc"])},
+        bs: @{lastPositionOf(["abcde", "cb"])},
+        bt: toLowerCase("Hello"),
+        bu: toUpperCase("Hello"),
+        bv: trimLeft("   Space  "),
+        bw: trimRight("   Space  "),
+        bx: chunk(["abracadabra", 3]),
+        by: padLeft(["abra", [length: 11, padString: "-*"]]),
+        bz: padRight(["abra", [length: 11, padString: "-*"]]),
+        ca: substringTo(["abracadabra", [start: 2, end: 7]]),
+        cb: substringLength(["abracadabra", [start: 2, length: 2]]),
+        cd: lessThan([5, 5.4]),
+        ce: lessThan([15, 15]),
+        cf: lessThanEqual([5, 5.4]),
+        cg: lessThanEqual([15, 15]),
+        ch: greaterThan([5, 5.4]),
+        ci: greaterThan([15, 15]),
+        cj: greaterThanEqual([5, 5.4]),
+        ck: greaterThanEqual([15, 15]),
+        cl: bitwiseAnd([13, 10]),
+        cm: bitwiseOr([13, 10]),
+        cn: bitwiseXor([13, 10]),
+        co: bitwiseNot(26),
+        cp: logicAnd([true, false]),
+        cq: logicOr([true, false]),
+        cr: logicNot(true),
+        cs: minusIntegers([21, 22]),
+        ct: minusIntegerAndReal([21, 7.5]),
+        cu: minusReals([5, 9.99]),
+        cs: multiplyIntegers([21, 22]),
+        ct: multiplyIntegerAndReal([21, 7.5]),
+        cu: multiplyReals([5, 9.99]),
+        cv: startsWith(["This is a very long sentence which contains abc", "abc"]),
+        cw: length("This is a very long sentence which contains abc"),
+        cx: {ws->as(String)}->contains("sentence"),
+        cy: @{integerDivideIntegers([21, 2])},
+        cz: @{divideIntegers([21, 2])},
+        da: @{divideIntegerAndReal([21, 7.5])},
+        db: @{divideReals([33.25, 3.5])},
+        dc: @{integerDivideIntegers([21, 0])},
+        dd: @{divideIntegers([21, 0])},
+        de: @{divideIntegerAndReal([21, 0])},
+        df: @{divideReals([33.25, 0])},
+        dg: @{moduloIntegers([21, 2])},
+        dh: @{moduloIntegerAndReal([21, 7.5])},
+        di: @{moduloReals([33.25, 3.5])},
+        dj: @{moduloIntegers([21, 0])},
+        dk: @{moduloIntegerAndReal([21, 0])},
+        dl: @{moduloReals([33.25, 0])},
+        dm: powerIntegers([3, 4]),
+        dn: powerIntegerAndReal([4, 7.5]),
+        do: powerReals([2.3, 1.9]),
+        dp: unaryMinusInteger(5),
+        dq: unaryPlusInteger(5),
+        dr: unaryMinusReal(3.14),
+        ds: unaryPlusReal(3.14),
+        dt: realAsInteger(3.64),
+        du: realAsInteger(-3.64),
+        dv: roundReal(3.14),
+        dw: roundReal(3.71),
+        dx: roundReal(-3.14),
+        dy: roundReal(-3.71),
+        dz: floorReal(3.14),
+        ea: floorReal(3.71),
+        eb: floorReal(-3.14),
+        ec: floorReal(-3.71),
+        ed: ceilReal(3.14),
+        ee: ceilReal(3.71),
+        ef: ceilReal(-3.14),
+        eg: ceilReal(-3.71),
+        eh: roundDecimal[3.1415927, 2],
+        ei: {Integer}->minValue,
+        ej: {Integer}->maxValue,
+        ek: mapFilterKeyValue([[a: "Hello", b: "my", c: "Friend"], ^[key: String, value: String] => Boolean :: {
+            {{#.key} == "c"} || {{#.value} == "Hello"}
+        }]),
+        el: mapFilter([[a: "Hello", b: "my", c: "Friend"], ^String => Boolean :: {
+            {#}->contains("e")
+        }]),
+        em: arrayFilter([["Hello", "my", "Friend"], ^String => Boolean :: {
+            {#}->contains("e")
+        }]),
+        en: @{arrayFindFirst([["Hello", "my", "Friend"], ^String => Boolean :: {
+            {#}->contains("e")
+        }])},
+        eo: @{arrayFindFirst([["Hello", "my", "Friend"], ^String => Boolean :: {
+            {#}->contains("@")
+        }])},
+        ep: @{mapFindFirst([[a: "Hello", b: "my", c: "Friend"], ^String => Boolean :: {
+            {#}->contains("e")
+        }])},
+        eq: @{mapFindFirst([[a: "Hello", b: "my", c: "Friend"], ^String => Boolean :: {
+            {#}->contains("@")
+        }])},
+        er: @{mapFindFirstKeyValue([[a: "Hello", b: "my", c: "Friend"], ^[key: String, value: String] => Boolean :: {
+            {{#.key} == "c"} || {{#.value} == "Hello"}
+        }])},
+        es: @{mapFindFirstKeyValue([[a: "Hello", b: "my", c: "Friend"], ^[key: String, value: String] => Boolean :: {
+            {{#.key} == "d"} || {{#.value} == "world"}
+        }])}
+    ]
+};

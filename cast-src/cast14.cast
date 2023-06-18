@@ -1,0 +1,45 @@
+-> Product;
+//
+Shape = [
+    area: ^Null => Real
+];
+
+Square <: [sideLength: Real];
+Square ==> Shape :: [
+    area: ^Null => Real :: {
+        {$.sideLength} * {$.sideLength}
+    }
+];
+
+Rectangle <: [width: Real, height: Real];
+Rectangle ==> Shape :: [
+    area: ^Null => Real :: {
+        {$.width} * {$.height}
+    }
+];
+Square ==> Rectangle :: Rectangle([$.sideLength, $.sideLength]);
+
+Circle <: [radius: Real];
+Circle ==> Shape :: [
+    area: ^Null => Real :: {
+        {{$.radius} * {$.radius}} * 3.1415927
+    }
+];
+
+longestSide = ^Rectangle => Real :: {
+    {[#.width, #.height]}->max
+};
+
+main = ^Array<String> => Any @@ :: {
+    sq = Square([12]);
+    ci = Circle([6]);
+    re = Rectangle([8, 18]);
+    [
+        sq->area,
+        ci->area,
+        re->area,
+        longestSide(re),
+        longestSide(sq->as(Rectangle)),
+        sq->as(Rectangle)
+    ]
+};
