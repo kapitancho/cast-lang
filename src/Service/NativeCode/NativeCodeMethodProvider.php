@@ -1540,8 +1540,7 @@ final readonly class NativeCodeMethodProvider {
 						$pdo = new PDO($target->baseValue['dsn'], 'root', 'root');
 						$stmt = $pdo->prepare($parameter['query']);
 						$stmt->execute($parameter['boundParameters']);
-						$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-						return $result;
+						return $stmt->fetchAll(PDO::FETCH_ASSOC);
 					} catch (PDOException $ex) {
 						throw new ThrowResult(new SubtypeValue(
 							new TypeNameIdentifier("QueryFailure"),
@@ -1560,8 +1559,7 @@ final readonly class NativeCodeMethodProvider {
 						$pdo = new PDO($target->baseValue['dsn'], 'root', 'root');
 						$stmt = $pdo->prepare($parameter['query']);
 						$stmt->execute($parameter['boundParameters']);
-						$result = $stmt->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_GROUP);
-						return $result;
+						return $stmt->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_GROUP);
 					} catch (PDOException $ex) {
 						throw new ThrowResult(new SubtypeValue(
 							new TypeNameIdentifier("QueryFailure"),
@@ -1580,8 +1578,7 @@ final readonly class NativeCodeMethodProvider {
 						$pdo = new PDO($target->baseValue['dsn'], 'root', 'root');
 						$stmt = $pdo->prepare($parameter['query']);
 						$stmt->execute($parameter['boundParameters']);
-						$rowCount = $stmt->rowCount();
-						return $rowCount;
+						return $stmt->rowCount();
 					} catch (PDOException $ex) {
 						throw new ThrowResult(new SubtypeValue(
 							new TypeNameIdentifier("QueryFailure"),

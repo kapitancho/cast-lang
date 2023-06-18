@@ -15,14 +15,12 @@ use Cast\Model\Runtime\Type\IntersectionType;
 use Cast\Model\Runtime\Type\NothingType;
 use Cast\Model\Runtime\Type\RealType;
 use Cast\Model\Runtime\Type\StringType;
-use Cast\Service\Registry\TypeRegistry;
 use Cast\Service\Type\IntersectionTypeNormalizer;
 use Cast\Service\Type\SubtypeRelationChecker;
 use PHPUnit\Framework\TestCase;
 
 final class IntersectionTypeNormalizerTest extends TestCase {
 
-	private readonly TypeRegistry $typeRegistry;
 	private readonly IntersectionTypeNormalizer $normalizer;
 
 	protected function setUp(): void {

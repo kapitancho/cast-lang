@@ -3,6 +3,7 @@
 namespace Cast\Service\Type;
 
 use Cast\Model\Program\Identifier\PropertyNameIdentifier;
+use Cast\Model\Runtime\Type\Type;
 use LogicException;
 
 final class TypeException extends LogicException {

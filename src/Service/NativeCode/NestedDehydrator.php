@@ -21,8 +21,6 @@ use Cast\Service\Type\TypeAssistant;
 final readonly class NestedDehydrator implements Dehydrator {
 
 	public function __construct(
-		private TypeAssistant $typeAssistant,
-		private SubtypeRelationChecker $subtypeRelationChecker,
 		private CastRegistry $castRegistry,
 		private FunctionExecutor $functionExecutor,
 		private SubExpressionExecutor $subExpressionExecutor

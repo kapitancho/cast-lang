@@ -56,6 +56,7 @@ use Cast\Model\Runtime\Type\IntegerType;
 use Cast\Model\Runtime\Type\IntersectionType;
 use Cast\Model\Runtime\Type\MapType;
 use Cast\Model\Runtime\Type\MutableType;
+use Cast\Model\Runtime\Type\NamedType;
 use Cast\Model\Runtime\Type\NothingType;
 use Cast\Model\Runtime\Type\NullType;
 use Cast\Model\Runtime\Type\RealType;
@@ -120,7 +121,6 @@ final class ValueHtmlPrinter {
 			RecordType::class => $this->printRecordType($value),
 			StringType::class => $this->printStringType($value),
 			TupleType::class => $this->printTupleType($value),
-			TypeNameTerm::class => $this->printTypeNameTerm($value),
 			TypeType::class => $this->printTypeType($value),
 			UnionType::class => $this->printUnionType($value),
 
@@ -136,7 +136,6 @@ final class ValueHtmlPrinter {
 			MatchPairTerm::class => $this->printMatchPairTerm($value),
 			MatchTrueTerm::class => $this->printMatchTrueTerm($value),
 			MatchTypePairTerm::class => $this->printMatchTypePairTerm($value),
-			MatchType::class => $this->printMatchType($value),
 			MatchValueTerm::class => $this->printMatchValueTerm($value),
 			MethodCallTerm::class => $this->printMethodCallTerm($value),
 			PropertyAccessTerm::class => $this->printPropertyAccessTerm($value),
@@ -452,18 +451,11 @@ final class ValueHtmlPrinter {
 		'</span>';
 	}
 
-	private function printTypeNameTerm(
-		TypeNameTerm $typeNameTerm
-	): string {
-		return '<span class="type-name-term">' .
-			'<span class="type-name">' . $typeNameTerm->typeName . '</span>' .
-		'</span>';
-	}
 
 	private function printMutableType(MutableType $mutableType): string {
 		$hasType = !($mutableType->refType instanceof AnyType ||
-			($mutableType->refType instanceof TypeNameTerm &&
-			$mutableType->refType->typeName->identifier === 'Any')
+			($mutableType->refType instanceof NamedType &&
+			$mutableType->refType->typeName()->identifier === 'Any')
 		);
 		return '<span class="type-type-term">' .
 			'<span class="type-name">Mutable</span>' .
@@ -474,8 +466,8 @@ final class ValueHtmlPrinter {
 
 	private function printTypeType(TypeType $typeType): string {
 		$hasType = !($typeType->refType instanceof AnyType ||
-			($typeType->refType instanceof TypeNameTerm &&
-			$typeType->refType->typeName->identifier === 'Any')
+			($typeType->refType instanceof NamedType &&
+			$typeType->refType->typeName()->identifier === 'Any')
 		);
 		return '<span class="type-type-term">' .
 			'<span class="type-name">Type</span>' .
@@ -495,18 +487,18 @@ final class ValueHtmlPrinter {
 			'</span>';
 	}
 
-	private function printLengthRange(LengthRange $range, Type $Type = new AnyType): string {
+	private function printLengthRange(LengthRange $range, Type $type = new AnyType): string {
 		$min = $range->minLength === 0 ? '' : $range->minLength;
 		$max = $range->maxLength === PlusInfinity::value ? '' : $range->maxLength;
-		$hasType = !($Type instanceof AnyType ||
-					($Type instanceof TypeNameTerm &&
-					$Type->typeName->identifier === 'Any'));
+		$hasType = !($type instanceof AnyType ||
+					($type instanceof NamedType &&
+					$type->typeName()->identifier === 'Any'));
 		return $min === '' && $max === '' ? (
-			$hasType ? ('<span class="type-parameter">&lt;' . $this->printNode($Type) . '&gt;</span>') : ''
+			$hasType ? ('<span class="type-parameter">&lt;' . $this->printNode($type) . '&gt;</span>') : ''
 		) :
 			'<span class="type-range">' .
 			'&lt;' .
-				($hasType ? ('<span class="type-parameter">' . $this->printNode($Type) . '</span>, ') : '') .
+				($hasType ? ('<span class="type-parameter">' . $this->printNode($type) . '</span>, ') : '') .
 				'<span class="type-range-min">' . $min . '</span>' . '..' .
 				'<span class="type-range-max">' . $max . '</span>' . '&gt;' .
 			'</span>';
@@ -627,22 +619,6 @@ final class ValueHtmlPrinter {
 					$this->printNode($constructorCallTerm->parameter) .
 				'</span>') .
 			($hasBrackets ? ')' : '') . '</span>' .
-		'</span>';
-	}
-
-	private function printMatchType(MatchType $matchType): string {
-		$cases = [];
-		foreach($matchType->parameters as $parameter) {
-			$cases[] = $this->printNode($parameter);
-		}
-		return '<span class="match-type-term">' .
-			'<span class="match-target">(' .
-				$this->printNode($matchType->target) .
-			')</span>' .
-			'<span class="match-type-op">?&lt;:</span>' .
-			'<span class="match-cases"> {<br/>' .
-				implode($cases) .
-			'}</span>' .
 		'</span>';
 	}
 

@@ -17,16 +17,13 @@ use Cast\Model\Runtime\Type\RealType;
 use Cast\Model\Runtime\Type\StringType;
 use Cast\Model\Runtime\Type\TrueType;
 use Cast\Model\Runtime\Type\TupleType;
-use Cast\Model\Runtime\Type\TypeType;
 use Cast\Model\Runtime\Type\UnionType;
-use Cast\Service\Registry\TypeRegistry;
 use Cast\Service\Type\SubtypeRelationChecker;
 use Cast\Service\Type\UnionTypeNormalizer;
 use PHPUnit\Framework\TestCase;
 
 final class UnionTypeNormalizerTest extends TestCase {
 
-	private readonly TypeRegistry $typeRegistry;
 	private readonly UnionTypeNormalizer $normalizer;
 
 	protected function setUp(): void {

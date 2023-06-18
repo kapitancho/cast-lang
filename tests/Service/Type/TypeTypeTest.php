@@ -5,7 +5,6 @@ namespace Cast\Test\Service\Type;
 use Cast\Model\Runtime\Type\BooleanType;
 use Cast\Model\Runtime\Type\TrueType;
 use Cast\Model\Runtime\Type\TypeType;
-use Cast\Service\Registry\TypeRegistry;
 use Cast\Service\Type\SubtypeRelationChecker;
 use PHPUnit\Framework\TestCase;
 

@@ -11,8 +11,6 @@ use Cast\Service\Type\TypeAssistant;
 final readonly class DehydratorFactory {
 
 	public function __construct(
-		private TypeAssistant $typeAssistant,
-		private SubtypeRelationChecker $subtypeRelationChecker,
 		private CastRegistry $castRegistry,
 		private FunctionExecutor $functionExecutor,
 	) {}
@@ -20,8 +18,6 @@ final readonly class DehydratorFactory {
 	/** @throws HydrationException */
 	public function getDehydrator(SubExpressionExecutor $subExpressionExecutor): Dehydrator {
 		return new NestedDehydrator(
-			$this->typeAssistant,
-			$this->subtypeRelationChecker,
 			$this->castRegistry,
 			$this->functionExecutor,
 			$subExpressionExecutor

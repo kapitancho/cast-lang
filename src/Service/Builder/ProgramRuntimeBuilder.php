@@ -92,8 +92,6 @@ final readonly class ProgramRuntimeBuilder {
 		);
 
 		$dehydratorFactory = new DehydratorFactory(
-			$this->typeAssistant,
-			$this->languageContext->subtypeRelationChecker,
 			$this->programContext->castRegistry,
 			$this->functionExecutor
 		);
