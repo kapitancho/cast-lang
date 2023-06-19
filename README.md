@@ -1,10 +1,56 @@
 # Cast Language
-A simple domaing-modelling friendly programming language
+A simple domain-modelling friendly programming language.
+The playground full of examples can be found here: https://cast-lang.eu.
 
-The documentation below is under construction.
+## Getting Started
 
-For concrete examples check examples on https://cast-lang.eu.
+### Highlights
 
+- The built in types `Integer`, `Real`, `String`, `Map`, `Record`, `Type` all
+    support constraints (e.g. `Real<-3.14..3.14>`, `Array<1..10>`, `Map<String<..20>, 5..10>`)
+    making them both domain-modelling and OpenApi friendly.
+- All types and functions are also values. They can be passed and return to/from functions.
+- All values represent pure data. On top of every type one can attach behaviour.
+    Example: for the value `y = [a: 1, b: 2]` the expression `y.a` is `1` while `y->values` is `[1, 2]`
+- All values are immutable except for values of type `Mutable<T>`. Therefore, all other types
+    are covariant (e.g. `Array<Integer>` is a subtype of `Array<Real>`)
+- Subtyping is supported for every type, even for types like Integer or a union type.
+- Type aliases allow for structural typing as well as casts between different types.
+- There is no special construct for interfaces but there is a way to use interfaces by 
+    defining casts.
+
+### Installation
+While the language itself is not bound to any specific
+runtime environment, the current implementation requires
+PHP. Therefore, it requires a PHP installation (8.2 or newer).
+The easiest way to try out the language is to write
+a file in the /cast-src folder and then execute /demo/index.php
+either through a web-server or via the command line.  
+
+#### Basic Syntax
+
+Every `Cast` file starts with a module name followed by any number
+of top-level expression. They could be `type definitions`, 
+`constant values` and `type casts`.
+
+Example:
+``` 
+Person <: [age: Integer<0..150>, name: String<1..>];
+p = Person[age: 20, name: "John Doe"];
+Person ==> String :: #.name;
+```
+
+The entry point is usually a function called `main`:
+```
+main = ^Array<String> => Any :: {
+   {"Hello World!"}->PRINT
+};
+```
+
+
+_The documentation below is under construction._
+
+## Types
 
 ### Integer values and types
 
@@ -145,9 +191,6 @@ Subtype:
 ```
 UnknownError <: Null;
 ```
-
-
-
 
 
 
@@ -563,86 +606,122 @@ p->as(String); // "{3.14,2}"
 
 
 ---
+
 ```Boolean->binaryLogicAnd(Boolean) => Boolean```\
 Example:\
 ```{true} && {false}``` &rArr; ```false```
+
 ---
+
 ```Boolean->binaryLogicOr(Boolean) => Boolean```\
 Example:\
 ```{true} || {false}``` &rArr; ```true```
+
 ---
+
 ```Boolean->unaryLogicNot => Boolean```\
 Example:\
 ```! {true}``` &rArr; ```false```
+
 ---
 
 ```Real->binaryPlus(Integer|Real) => Real```\
 Example:\
 ```{3.14} + {8}``` &rArr; ```11.14```
+
 ---
+
 ```Real->binaryMinus(Integer|Real) => Real```\
 Example:\
 ```{3.14} - {8}``` &rArr; ```-4.86```
+
 ---
+
 ```Real->binaryMultiplication(Integer|Real) => Real```\
 Example:\
 ```{3.14} * {8}``` &rArr; ```25.12```
 
 
 ---
+
 ```Integer->binaryPlus(Integer) => Integer```\
 Example:\
 ```{5} + {8}``` &rArr; ```13```
+
 ---
+
 ```Integer->binaryMinus(Integer) => Integer```\
 Example:\
 ```{5} - {8}``` &rArr; ```-3```
+
 ---
+
 ```Integer->binaryMultiplication(Integer) => Integer```\
 Example:\
 ```{5} * {8}``` &rArr; ```40```
+
 ---
+
 ```Integer->binaryPlus(Real) => Real```\
 Example:\
 ```{5} + {3.14}``` &rArr; ```8.14```
+
 ---
+
 ```Integer->binaryMinus(Real) => Real```\
 Example:\
 ```{5} - {3.14}``` &rArr; ```-1.86```
+
 ---
+
 ```Integer->binaryMultiplication(Real) => Real```\
 Example:\
 ```{5} * {3.14}``` &rArr; ```15.7```
+
 ---
+
 ```Integer->upTo(Integer) => Array<Integer>```\
 Examples:\
 ```{5}->upTo(8)``` &rArr; ```[5, 6, 7, 8]```\
 ```{8}->upTo(5)``` &rArr; ```[]```
+
 ---
+
 ```Integer->downTo(Integer) => Array<Integer>```\
 Examples:\
 ```{5}->upTo(8)``` &rArr; ```[]```\
 ```{8}->upTo(5)``` &rArr; ```[8, 7, 6, 5]```
+
 ---
+
 ```Integer->binaryAnd(Integer) => Integer```\
 Example:\
 ```{5} & {12}``` &rArr; ```4```
+
 ---
+
 ```Integer->binaryOr(Integer) => Integer```\
 Example:\
 ```{5} | {12}``` &rArr; ```13```
+
 ---
+
 ```Integer->binaryXor(Integer) => Integer```\
 Example:\
 ```{5} ^ {12}``` &rArr; ```9```
+
 ---
+
 (todo unary not)
 
 ---
+
 ```String->PRINT => String```\
 Example:\
 ```{"Hello World"}->PRINT``` &rArr; ```"Hello World"``` and printed to the standard output
+
 ---
+
 ```String->jsonStringToValue => JsonValue @ InvalidJsonValue```\
 Example:\
 ```{"[1, false, null, {}]"}->jsonStringToValue``` &rArr; ```[1, false, null, [:]]```
@@ -652,372 +731,525 @@ Examples:\
 ```{"42"}->asIntegerNumber``` &rArr; ```42```\
 ```{"3.14"}->asIntegerNumber``` &rArr; ```StringIsNoIntegerNumber(3.14)```\
 ```{"Hello World"}->asIntegerNumber``` &rArr; ```StringIsNoIntegerNumber("Hello World")```
+
 ---
+
 ```String->asRealNumber => Real @ StringIsNoRealNumber```\
 Examples:\
 ```{"42"}->asRealNumber``` &rArr; ```42```\
 ```{"3.14"}->asRealNumber``` &rArr; ```3.14```\
 ```{"Hello World"}->asRealNumber``` &rArr; ```StringIsNoRealNumber("Hello World")```
+
 ---
+
 ```String->length => Integer```\
 Example:\
 ```{"Hello World"}->length``` &rArr; ```11```
+
 ---
+
 ```String->reverse => String```\
 Example:\
 ```{"Hello World"}->reverse``` &rArr; ```"dlroW olleH"```
+
 ---
+
 ```String->toLowerCase => String```\
 Example:\
 ```{"Hello World"}->toLowerCase``` &rArr; ```"hello world"```
+
 ---
+
 ```String->toUpperCase => String```\
 Example:\
 ```{"Hello World"}->toUpperCase``` &rArr; ```"HELLO WORLD"```
+
 ---
+
 ```String->trim => String```\
 Example:\
 ```{"  hi!  "}->trim``` &rArr; ```"hi!"```
+
 ---
+
 ```String->trimLeft => String```\
 Example:\
 ```{"  hi!  "}->trimLeft``` &rArr; ```"hi!   "```
+
 ---
+
 ```String->trimRight => String```\
 Example:\
 ```{"  hi!  "}->trimRight``` &rArr; ```"   hi!"```
+
 ---
+
 ```String->concatList(Array<String>) => String```\
 Example:\
 ```{"Start"}->concatList["To", "End"]``` &rArr; ```"StartToEnd"```
+
 ---
+
 ```String->concat(String) => String```\
 Example:\
 ```{"Start"}->concat("End")``` &rArr; ```"StartEnd"```
+
 ---
+
 ```String->contains(String<1..>) => Boolean```\
 Example:\
 ```{"Start"}->contains("Star")``` &rArr; ```true```\
 ```{"Start"}->contains("art")``` &rArr; ```true```\
 ```{"Start"}->contains("trap")``` &rArr; ```false```
+
 ---
+
 ```String->startsWith(String<1..>) => Boolean```\
 Example:\
 ```{"Start"}->startsWith("Star")``` &rArr; ```true```\
 ```{"Start"}->startsWith("art")``` &rArr; ```false```\
 ```{"Start"}->startsWith("trap")``` &rArr; ```false```
+
 ---
+
 ```String->endsWith(String<1..>) => Boolean```\
 Example:\
 ```{"Start"}->endsWith("Star")``` &rArr; ```false```\
 ```{"Start"}->endsWith("art")``` &rArr; ```true```\
 ```{"Start"}->endsWith("trap")``` &rArr; ```false```
+
 ---
+
 ```String->positionOf(String<1..>) => Integer @ SubstringNotInString```\
 Example:\
 ```{"Start"}->positionOf("Star")``` &rArr; ```0```\
 ```{"Start"}->positionOf("t")``` &rArr; ```1```\
 ```{"Start"}->positionOf("trap")``` &rArr; ```SubstringNotInString()```
+
 ---
+
 ```String->lastPositionOf(String<1..>) => Integer @ SubstringNotInString```\
 Examples:\
 ```{"Start"}->lastPositionOf("Star")``` &rArr; ```0```\
 ```{"Start"}->lastPositionOf("t")``` &rArr; ```4```\
 ```{"Start"}->lastPositionOf("trap")``` &rArr; ```SubstringNotInString()```
+
 ---
+
 ```String->split(String<1..>) => Array<String>```\
 Example:\
 ```{"Start"}->split("t")``` &rArr; ```["S", "ar", ""]```
+
 ---
+
 ```String->chunk(Integer<1..>) => Array<String>```\
 Example:\
 ```{"Start"}->chunk(2)``` &rArr; ```["St", "ar", "t"]```
+
 ---
+
 ```String->padLeft[length: Integer<0..>, padString: String<1..>] => String```\
 Example:\
 ```{"Start"}->padLeft[length: 10, padString: "-*"]``` &rArr; ```"Start-*-*-"```
+
 ---
+
 ```String->padRight[length: Integer<0..>, padString: String<1..>] => String```\
 Example:\
 ```{"Start"}->padRight[length: 10, padString: "-*"]``` &rArr; ```"-*-*-Start"```
+
 ---
+
 ```String->substring[start: Integer<0..>, end: Integer<0..>] => String```\
 Example:\
 ```{"Start"}->substring[start: 1, end: 3]``` &rArr; ```"tar"```
+
 ---
+
 ```String->substring[start: Integer<0..>, length: Integer<0..>] => String```\
 Example:\
 ```{"Start"}->substring[start: 2, length: 2]``` &rArr; ```"ar"```
+
 ---
+
 ```Array<[String, T]>->asMap => Map<T>```\
 Example:\
 ```{[["k", "V"], ["n", 9]]}->asMap``` &rArr; ```[k: "V", n: 9]```
+
 ---
+
 ```Array->length => Integer```\
 Example:\
 ```{[1, 2, 3.14]}->length``` &rArr; ```3```
+
 ---
+
 ```Array<T>->item(Integer) => T @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->item(1)``` &rArr; ```2```\
 ```{[1, 2, 5]}->item(4)``` &rArr; ```ArrayItemNotFound(4)```
+
 ---
+
 ```Array<T>->contains(T) => Boolean```\
 Examples:\
 ```{[1, 2, 5]}->contains(2)``` &rArr; ```true```\
 ```{[1, 2, 5]}->contains(7)``` &rArr; ```false```
+
 ---
+
 ```Array<T>->indexOf(T) => Integer @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->indexOf(2)``` &rArr; ```1```\
 ```{[1, 2, 5]}->indexOf(7)``` &rArr; ```ArrayItemNotFound(7)```
+
 ---
+
 ```Array<T>->without(T) => T @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->without(2)``` &rArr; ```[1, 5]```\
 ```{[1, 2, 5]}->without(7)``` &rArr; ```ArrayItemNotFound(7)```
+
 ---
+
 ```Array<String>->combineAsText => String```\
 Example:\
 ```{["Hello", " ", "world", "!"]}->combineAsText``` &rArr; ```"Hello world!"```
+
 ---
+
 ```Array<String>->countValues => Map<Integer>```\
 Example:\
 ```{["hello", "world", "world"]}->countValues``` &rArr; ```[hello: 1, world: 2]```
+
 ---
+
 ```Array<T>->withoutByIndex(Integer<0..>) => T @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->withoutByIndex(1)``` &rArr; ```[1, 5]```\
 ```{[1, 2, 5]}->withoutByIndex(7)``` &rArr; ```ArrayItemNotFound(7)```
+
 ---
+
 ```Array<T>->withoutFirst => [array: Array<T>, element: T] @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->withoutFirst``` &rArr; ```[array: [2, 5], element: 1]```\
 ```{[]}->withoutFirst``` &rArr; ```ArrayItemNotFound()```
+
 ---
+
 ```Array<T>->withoutLast => [array: Array<T>, element: T] @ ArrayItemNotFound```\
 Examples:\
 ```{[1, 2, 5]}->withoutLast``` &rArr; ```[array: [1, 2], element: 5]```\
 ```{[]}->withoutLast``` &rArr; ```ArrayItemNotFound()```
+
 ---
+
 ```Array<T>->pad[length: Integer<1..>, value: S] => Array<T|S>```\
 Example:\
 ```{[1, 2, 5]}->pad[length: 5, value: 3.14]``` &rArr; ```[1, 2, 5, 3.14, 3.14]```
+
 ---
+
 ```Array<T>->insertFirst(S) => Array<T|S>```\
 Example:\
 ```{[1, 2, 5]}->insertFirst(3.14)``` &rArr; ```[3.14, 1, 2, 5]```
+
 ---
+
 ```Array<T>->insertLast(S) => Array<T|S>```\
 Example:\
 ```{[1, 2, 5]}->insertLast(3.14)``` &rArr; ```[1, 2, 5, 3.14]```
+
 ---
+
 ```Array<T>->appendWith(Array<S>) => Array<T|S>```\
 Example:\
 ```{[1, 2, 5]}->appendWith[3.14, "Hi!"]``` &rArr; ```[1, 2, 5, 3.14, "Hi"]```
+
 ---
+
 ```Array<T>->sort => Array<T>``` for ```T <: Integer|Real|String```\
 Examples:\
 ```{[4, 11, 5]}->sort``` &rArr; ```[4, 5, 11]```\
 ```{["4", "11", "5"]}->sort``` &rArr; ```["11", "4", "5"]```
+
 ---
+
 ```Array<T>->unique => Array<T>``` for ```T <: Integer|Real|String```\
 Examples:\
 ```{[4, 11, 5, 11]}->sort``` &rArr; ```[4, 11, 5]```\
 ```{["4", "11", "Hi!", "11"]}->sort``` &rArr; ```["4", "11", "Hi!"]```
+
 ---
+
 ```Array<T>->sum => Array<T>``` for ```T <: Integer|Real```\
 Example:\
 ```{[3.14, 1.29, 7.81]}->sum``` &rArr; ```12.24```
+
 ---
+
 ```Array<T>->min => Array<T>``` for ```T <: Integer|Real```\
 Example:\
 ```{[3.14, 1.29, 7.81]}->sum``` &rArr; ```1.29```
+
 ---
+
 ```Array<T>->max => Array<T>``` for ```T <: Integer|Real```\
 Example:\
 ```{[3.14, 1.29, 7.81]}->sum``` &rArr; ```7.81```
+
 ---
+
 ```Array<String>->flip => Map<Integer>```\
 Example:\
 ```{["B", "Hi", "x"]}->flip``` &rArr; ```[B: 0, Hi: 1, x: 2]```
+
 ---
+
 ```Array<T>->map(^T => S) => Array<S>```\
 Example:\
 ```{["Hello", "!", "Hi"]}->map(^String => Integer :: #->length)``` &rArr; ```[5, 1, 2]```
+
 ---
+
 ```Map<T>->with(Map<S>) => Map<T|S>```\
 Example:\
 ```{[a: 1, b: 2]}->with[b: 3, c: 4]``` &rArr; ```[a: 1, b: 3, c: 4]```
+
 ---
+
 ```Map<T>->values => Array<T>```
 Example:\
 ```{[a: 1, b: 2]}->values``` &rArr; ```[1, 2]```
+
 ---
+
 ```Map<T>->keys => Array<String>```
 Example:\
 ```{[a: 1, b: 2]}->keys``` &rArr; ```["a", "b"]```
+
 ---
+
 ```Map<String>->flip => Map<String>```\
 Example:\
 ```{[a: "b", c: "d"]}->flip``` &rArr; ```[b: "a", d: "c"]```
+
 ---
+
 ```Map<T>->map(^T => S) => Map<S>```\
 Example:\
 ```{[a: "Hello", b: "!", c: "Hi"]}->map(^String => Integer :: #->length)``` &rArr; ```[a: 5, b: 1, c: 2]```
+
 ---
+
 ```Map<T>->mapKeyValue(^[key: String, value: T] => [key: String, value: S]) => Map<S>```\
 Example:\
 ```{[abc: "Hello", value: "World!"]}->mapKeyValue(^[key: String, value: T] => [key: String, value: S] :: [key: #->reverse, value: #->length])``` &rArr; ```[olleH: 5, dlroW: 6]```
+
 ---
+
 ```Map<T>->mergeWith(Map<S>) => Map<T|S>```\
 Example:\
 ```{[a: 1, b: 2]}->with[b: 3, c: 4]``` &rArr; ```[a: 1, b: 3, c: 4]```
+
 ---
+
 ```Map<T>->withKeyValue[key: String, value: S] => Map<T|S>```\
 Example:\
 ```{[a: 1, b: 2]}->withKeyValue[key: "c", value: 3.14]``` &rArr; ```[a: 1, b: 2, c: 3.14]```
+
 ---
+
 ```Map<T>->without(T) => T @ MapItemNotFound```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->without(2)``` &rArr; ```[a: 1, c: 5]```\
 ```{[a: 1, b: 2, c: 5]}->without(7)``` &rArr; ```MapItemNotFound(7)```
+
 ---
+
 ```Map<T>->withoutByKey(String) => T @ MapItemNotFound```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->withoutByIndex("b")``` &rArr; ```[a: 1, c: 5]```\
 ```{[a: 1, b: 2, c: 5]}->withoutByIndex("f")``` &rArr; ```MapItemNotFound("f")```
+
 ---
+
 ```Map<T>->item(String) => T @ MapItemNotFound```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->item("b")``` &rArr; ```2```\
 ```{[a: 1, b: 2, c: 5]}->item("f")``` &rArr; ```MapItemNotFound("f")```
+
 ---
+
 ```Map->keyExists(String) => Boolean```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->keyExists("b")``` &rArr; ```true```\
 ```{[a: 1, b: 2, c: 5]}->keyExists("f")``` &rArr; ```false```
+
 ---
+
 ```Map<T>->contains(T) => Boolean```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->contains(2)``` &rArr; ```true```\
 ```{[a: 1, b: 2, c: 5]}->contains(7)``` &rArr; ```false```
+
 ---
+
 ```Map<T>->keyOf(T) => String @ MapItemNotFound```\
 Examples:\
 ```{[a: 1, b: 2, c: 5]}->keyOf(2)``` &rArr; ```"b"```\
 ```{[a: 1, b: 2, c: 5]}->keyOf(7)``` &rArr; ```MapItemNotFound(7)```
+
 ---
+
 ```EnumerationValue<T>->textValue => String```\
 Example:\
 ```Suit = :[Spades, Hearts, Diamonds, Clubs];```\
 ```x = Suit.Diamonds;```\
 ```x->textValue``` &rArr; ```"Diamonds"```
+
 ---
+
 ```Enumeration<T>->values => Array<String>```\
 Example:\
 ```Suit = :[Spades, Hearts, Diamonds, Clubs];```\
 ```Suit->values``` &rArr; ```["Spades", "Hearts", "Diamonds", "Clubs"]```
+
 ---
 
 
 ---
+
 ```Mutable<T>->value => T```\
 Example:\
 ```x = Mutable<Integer, 10>;```\
 ```x->value``` &rArr; ```10```
 
 ---
+
 ```Mutable<T>->SET(T) => T```\
 Example:\
 ```x = Mutable<Integer, 10>;```\
 ```x->SET(15)``` &rArr; ```15```
 
 ---
+
 ```Subtype<Record>->with(Record) => Subtype```\
 Example:\
 ```Point <: [x: Real, y: Real];```\
 ```p = Point[x: 3.14, y: 42];```\
 ```p->with[y: -10]``` &rArr; ```Point[x: 3.14, y: -10]```
+
 ---
+
 ```Type<T>->refType => T```\
 Example:\
 ```t = Integer<12..30>->type;```\
 ```t->refType``` &rArr; ```Integer<12..30>```
+
 ---
+
 ```Type<Array<T>>->itemType => T```\
 Example:\
 ```t = Array<Integer<1..12>>;```\
 ```t->itemType``` &rArr; ```Integer<12..30>```
+
 ---
+
 ```Type<Map<T>>->itemType => T```\
 Example:\
 ```t = Map<Integer<1..12>>;```\
 ```t->itemType``` &rArr; ```Integer<1..12>```
+
 ---
+
 ```Type<String>->minLength => Integer<0..>```\
 Example:\
 ```t = String<5..10>;```\
 ```t->minLength``` &rArr; ```5```
+
 ---
+
 ```Type<String>->maxLength => Integer<0..>```\
 Example:\
 ```t = String<5..10>;```\
 ```t->maxLength``` &rArr; ```10```
+
 ---
----
+
 ```Type<Array>->minLength => Integer<0..>```\
 Example:\
 ```t = Array<Integer, 5..10>;```\
 ```t->minLength``` &rArr; ```5```
+
 ---
+
 ```Type<Array>->maxLength => Integer<0..>```\
 Example:\
 ```t = Array<Integer, 5..10>;```\
 ```t->maxLength``` &rArr; ```10```
+
 ---
+
 ```Type<Map>->minLength => Integer<0..>```\
 Example:\
 ```t = Map<Integer, 5..10>;```\
 ```t->minLength``` &rArr; ```5```
+
 ---
+
 ```Type<Map>->maxLength => Integer<0..>```\
 Example:\
 ```t = Map<Integer, 5..10>;```\
 ```t->maxLength``` &rArr; ```10```
+
 ---
+
 ```Type<Integer>->minValue => Integer```\
 Example:\
 ```t = Integer<12..30>;```\
 ```t->minValue``` &rArr; ```12```
+
 ---
+
 ```Type<Integer>->maxValue => Integer```\
 Example:\
 ```t = Integer<12..30>;```\
 ```t->maxValue``` &rArr; ```30```
+
 ---
+
 ```Type<Real>->minValue => Real```\
 Example:\
 ```t = Integer<3.14..30>;```\
 ```t->minValue``` &rArr; ```3.14```
+
 ---
+
 ```Type<Real>->maxValue => Real```\
 Example:\
 ```t = Integer<3.14..30>;```\
 ```t->maxValue``` &rArr; ```30```
+
 ---
+
 ```Type<Enumeration<T>>->values => Array<T>```\
 Example:\
 ```Suit = :[Spades, Hearts, Diamonds, Clubs];```\
 ```t = Suit;```\
 ```t->values``` &rArr; ```[Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs]```
+
 ---
+
 ```Type<Enumeration<T>>->value => T```\
 Example:\
 ```Suit = :[Spades, Hearts, Diamonds, Clubs];```\
 ```t = {Suit.Spades}->type;```\
 ```t->value``` &rArr; ```Suit.Spades```
+
 ---
+
 ```Type<Enumeration<T>>->valueWithName(String) => T @ EnumItemNotFound```\
 Example:\
 ```Suit = :[Spades, Hearts, Diamonds, Clubs];```\
@@ -1026,47 +1258,62 @@ Example:\
 ```t->valueWithName("Ace")``` &rArr; ```EnumItemNotFound("Ace")```
 
 ---
+
 ```Any->DEBUG => Any```\
 Example:\
 ```{[3.14, 42]}->DEBUG;``` &rArr; ```[3.14, 42]``` and printed to the standard output
+
 ---
+
 ```Any->binaryEqual(Any) => Boolean```\
 Examples:\
 ```{[3.14, 42]} == {[3.14, 42]};``` &rArr; ```true```\
 ```{[3.14, 42]} == {"Hello"};``` &rArr; ```false```
+
 ---
+
 ```Any->binaryNotEqual(Any) => Boolean```\
 Examples:\
 ```{[3.14, 42]} != {[3.14, 42]};``` &rArr; ```false```\
 ```{[3.14, 42]} != {"Hello"};``` &rArr; ```true```
+
 ---
+
 ```Any->binarySubtype(Type) => Boolean```\
 Examples:\
 ```{[3.14, 42]} <: {[Real, Real]};``` &rArr; ```true```\
 ```{[3.14, 42]} <: Array<Real>;``` &rArr; ```true```\
 ```{[3.14, 42]} != {[Integer, Integer]};``` &rArr; ```false```
 ```{[3.14, 42]} <: Array<Integer>;``` &rArr; ```false```\
+
 ---
+
 ```T->type => Type<T>```\
 Example:\
 ```{[3.14, 42]}->type;``` &rArr; ```[Real<3.14..3.14>, Integer<42..42>]```
+
 ---
+
 ```Any->as(Type<T>) => T @ CastNotAvailable```\
 Examples:\
 ```{3.14}->as(String);``` &rArr; ```"3.14"```\
 ```{3.14}->as(Point);``` &rArr; ```CastNotAvailable()```
+
 ---
+
 ```JsonValue->asJson => String```\
 Example:\
 ```{3.14}->asJson;``` &rArr; ```"3.14"```\
 
 ---
+
 ```T->asText => String``` where ```T <: Integer|Real|String|Boolean|Null|Type```\
 Examples:\
 ```{3.14}->asText;``` &rArr; ```"3.14"```\
 ```{Integer<1..12>}->asText;``` &rArr; ```"Integer<1..12>"```\
 
 ---
+
 ```Any->asBoolean => Boolean```
 Examples:\
 ```{3.14}->asBoolean;``` &rArr; ```true```\
