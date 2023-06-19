@@ -6,18 +6,22 @@ The playground full of examples can be found here: https://cast-lang.eu.
 
 ### Highlights
 
-- The built in types `Integer`, `Real`, `String`, `Map`, `Record`, `Type` all
-    support constraints (e.g. `Real<-3.14..3.14>`, `Array<1..10>`, `Map<String<..20>, 5..10>`)
-    making them both domain-modelling and OpenApi friendly.
-- All types and functions are also values. They can be passed and return to/from functions.
+- All types and functions are also values. They can be passed and returned to/from functions.
 - All values represent pure data. On top of every type one can attach behaviour.
     Example: for the value `y = [a: 1, b: 2]` the expression `y.a` is `1` while `y->values` is `[1, 2]`
 - All values are immutable except for values of type `Mutable<T>`. Therefore, all other types
     are covariant (e.g. `Array<Integer>` is a subtype of `Array<Real>`)
-- Subtyping is supported for every type, even for types like Integer or a union type.
+- Subtyping is supported for every type, even for types like `Integer` or any union type.
 - Type aliases allow for structural typing as well as casts between different types.
 - There is no special construct for interfaces but there is a way to use interfaces by 
     defining casts.
+- The built in types `Integer`, `Real`, `String`, `Map`, `Record`, `Type` all
+    support constraints (e.g. `Real<-3.14..3.14>`, `Array<1..10>`, `Map<String<..20>, 5..10>`)
+    making them both domain-modelling and OpenApi friendly.
+- In addition:
+  - every tuple type is a subtype of an array type (e.g. `[Integer, String] <: Array<Integer|String>, 2..2>`), 
+  - every record type is a subtype of a map type (e.g. `[x: Real, y: Real] <: Map<Real, 2..2>`)
+  - every enumeration subtype is a subtype of a string type (e.g. `Status = :[Pending, Accepted, Rejected] <: String`)
 
 ### Installation
 While the language itself is not bound to any specific
