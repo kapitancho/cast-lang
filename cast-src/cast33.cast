@@ -1,0 +1,27 @@
+-> Product;
+//
+InvalidIsbn <: String;
+calculateIsbnChecksum = ^[isbn: String<10..10>] => Integer @ StringIsNoIntegerNumber :: {
+    {{{#isbn->reverse}->chunk(1)}->mapIndexValue(
+        ^[index: Integer<0..>, value: String<1..1>] => Integer @ StringIsNoIntegerNumber :: {
+            {#.value->asIntegerNumber} * {{#.index} + 1}
+        }
+    )}->sum
+};
+
+Isbn <: String @ (InvalidIsbn|StringIsNoIntegerNumber) :: {
+    checksum = (#) ?<: {
+        | String<10..10>: calculateIsbnChecksum[#]
+        | ~: @ InvalidIsbn(#)
+    };
+    ({checksum} % 11) ?== {
+        | @ InvalidIsbn(#)
+        | null
+    }
+};
+UnknownBook <: Isbn;
+BookByIsbn = ^Isbn => Book @ UnknownBook;
+
+main = ^Array<String> => Any @@ :: {
+    [Isbn("1259060977"), @{Isbn("1259060978")}]
+};

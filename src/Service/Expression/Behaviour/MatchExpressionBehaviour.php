@@ -12,6 +12,7 @@ use Cast\Model\Program\Expression\MatchExpressionOperation;
 use Cast\Model\Program\Expression\VariableAssignmentExpression;
 use Cast\Model\Program\Expression\VariableNameExpression;
 use Cast\Model\Program\Literal\NullLiteral;
+use Cast\Model\Runtime\Type\AnyType;
 use Cast\Model\Runtime\Value\LiteralValue;
 use Cast\Model\Runtime\Value\TypeValue;
 use Cast\Service\Execution\ExecutionResultContext;
@@ -69,7 +70,8 @@ final readonly class MatchExpressionBehaviour implements ExpressionAnalyser, Exp
 				$expression->target instanceof VariableAssignmentExpression ||
 				$expression->target instanceof VariableNameExpression
  			) && $expr->matchedExpression instanceof ConstantExpression &&
-				$expr->matchedExpression->constant instanceof TypeValue
+				$expr->matchedExpression->constant instanceof TypeValue &&
+				!($expr->matchedExpression->constant->type instanceof AnyType)
 			) {
 				$innerScope = $innerScope->withAddedVariablePairs(
 					new VariablePair(

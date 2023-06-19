@@ -523,6 +523,28 @@ final readonly class NativeCodeMethodProvider {
 					$variableValueScope
 				);
 			}),
+			'Array::mapIndexValue' => new CallableNativeCodeHandler(function(
+				ListValue                  $target,
+				ClosureValue|FunctionValue $parameter,
+				VariableValueScope         $variableValueScope,
+				SubExpressionExecutor      $subExpressionExecutor
+			): ExecutionResultValueContext {
+				$result = [];
+				foreach($target->items as $key => $value) {
+					$result[$key] = $this->functionExecutor->executeFunction(
+						$subExpressionExecutor,
+						$parameter,
+						new DictValue([
+							'index' => new LiteralValue(new IntegerLiteral($key)),
+							'value' => $value
+						])
+					);
+				}
+				return new ExecutionResultValueContext(
+					new ListValue(... $result),
+					$variableValueScope
+				);
+			}),
 			'Array::filter' => new CallableNativeCodeHandler(function(
 				ListValue                  $target,
 				ClosureValue|FunctionValue $parameter,

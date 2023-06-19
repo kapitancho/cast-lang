@@ -486,6 +486,24 @@ final readonly class ArrayMethodFinder implements ByTypeMethodFinder {
 					$targetType->range
 				), $parameterType->returnType->errorType);
 			}
+			if ($methodName->identifier === 'mapIndexValue' &&
+				$parameterType->parameterType instanceof RecordType &&
+				array_key_exists('index', $parameterType->parameterType->types) &&
+				array_key_exists('value', $parameterType->parameterType->types) &&
+				$this->subtypeRelationChecker->isSubtype(
+					new IntegerType(new IntegerRange(0, PlusInfinity::value)),
+					$parameterType->parameterType->types['index'],
+				) &&
+				$this->subtypeRelationChecker->isSubtype(
+					$parameterType->parameterType->types['value'],
+					$targetItemType,
+				)
+			) {
+				return $this->getFunction("Array::mapIndexValue", new ArrayType(
+					$parameterType->returnType->returnType,
+					$targetType->range
+				), $parameterType->returnType->errorType);
+			}
 			if ($methodName->identifier === 'filter' &&
 				$this->subtypeRelationChecker->isSubtype(
 					$parameterType->returnType->returnType,
