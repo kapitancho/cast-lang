@@ -3,7 +3,7 @@ A simple domain-modelling friendly programming language.
 The playground full of examples can be found here: https://cast-lang.eu.
 
 ## Quick Example
-![Quick Example](https://cast-lang.eu/cast-pic.png)
+![Short example](https://cast-lang.eu/cast-pic.png?ver=1)
 
 ## Getting Started
 
