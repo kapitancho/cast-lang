@@ -2,6 +2,9 @@
 A simple domain-modelling friendly programming language.
 The playground full of examples can be found here: https://cast-lang.eu.
 
+## Quick Example
+![Quick Example](https://cast-lang.eu/cast-pic.png)
+
 ## Getting Started
 
 ### Highlights
